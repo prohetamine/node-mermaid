@@ -1,10 +1,10 @@
 console.log('Init script')
-const Mermaid = require('./index')({
+const Mermaid = require('./src/index')({
   port: 6767,
   debug: false
 })
 
-const MermaidParser = require('./parser')
+const MermaidParser = require('./src/parser')
 
 ;(async () => {
   console.log('Init server')
