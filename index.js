@@ -2,10 +2,9 @@ const express     = require('express')
     , app         = express()
     , http        = require('http')
     , server      = http.createServer(app)
-    , cors        = require('cors')
     , { Server }  = require('socket.io')
 
-module.exports = ({ port = 6767, debug = false } = { port: 6767, debug: false }) => {
+module.exports = ({ port = 6767 } = { port: 6767, debug: false }) => {
   const io = new Server(server, {
     cors: {
       origin: '*',
@@ -52,7 +51,7 @@ module.exports = ({ port = 6767, debug = false } = { port: 6767, debug: false })
       dataCallback(parsedData)
     })
 
-    socket.on('disconnect', data => {
+    socket.on('disconnect', () => {
       proxySites[socket.handshake.query.platform] = false
     })
   })

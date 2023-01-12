@@ -1,6 +1,6 @@
 {
   "name": "node-mermaid",
-  "version": "0.0.301",
+  "version": "0.0.7",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,6 +9,8 @@
   "author": "Stas Prohetamine",
   "license": "ISC",
   "dependencies": {
+    "app-data-folder": "^1.0.0",
+    "axios": "^1.2.2",
     "child_process": "^1.0.2",
     "cors": "^2.8.5",
     "express": "^4.18.2",
@@ -16,9 +18,15 @@
     "fs-extra": "^11.1.0",
     "html-escaper": "^3.0.3",
     "http": "^0.0.1-security",
+    "npminstall": "^7.3.1",
     "path": "^0.12.7",
     "sleep-promise": "^9.1.0",
     "socket.io": "^4.5.4",
-    "socket.io-client": "^4.5.4"
+    "socket.io-client": "^4.5.4",
+    "unzip": "^0.1.11",
+    "unzipper": "^0.10.11"
+  },
+  "devDependencies": {
+    "eslint": "^8.31.0"
   }
 }

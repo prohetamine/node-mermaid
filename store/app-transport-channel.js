@@ -4,7 +4,7 @@ module.exports = ({ debug = false } = { debug: false }) => {
   const [repo, app, port, size, isDev] = process.argv.slice(2)
 
   const socket = io(
-    `http://localhost:${port}?platform=app-transport-channel&repo=${repo}&app=${app}&isDev=${!!isDev}`,
+    `http://localhost:${port}?platform=app-transport-channel&repo=${repo}&app=${app}&size=${size}&isDev=${!!isDev}`,
     {
       options: {
         reconnectionDelayMax: 10000

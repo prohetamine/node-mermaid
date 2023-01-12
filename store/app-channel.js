@@ -20,13 +20,12 @@ module.exports = ({ debug = false } = { debug: false }) => {
     , statusCallback = () => {}
     , dataCallback = () => {}
     , reloadCallback = () => {}
-    , stopCallback = () => {}
 
   socket.on('connect', async () => {
     connectCallback()
   })
 
-  socket.on("disconnect", () => {
+  socket.on('disconnect', () => {
     process.exit()
   })
 
@@ -62,18 +61,27 @@ module.exports = ({ debug = false } = { debug: false }) => {
   socket.on('reload', async appData => {
     if (repo === appData.repo && app === appData.app) {
       reloadCallback()
+      socket.emit('state', state)
     }
   })
 
   socket.on('pause', appData => {
     if (repo === appData.repo && app === appData.app) {
       state.isPlay = false
+      socket.emit('state', state)
     }
   })
 
   socket.on('play', appData => {
     if (repo === appData.repo && app === appData.app) {
       state.isPlay = true
+      socket.emit('state', state)
+    }
+  })
+
+  socket.on('delete', appData => {
+    if (repo === appData.repo && app === appData.app) {
+      process.exit()
     }
   })
 
@@ -93,10 +101,6 @@ module.exports = ({ debug = false } = { debug: false }) => {
 
       if (type === 'reload') {
         reloadCallback = callback
-      }
-
-      if (type === 'stop') {
-        stopCallback = callback
       }
     }
   })
