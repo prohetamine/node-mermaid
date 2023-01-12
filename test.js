@@ -4,6 +4,7 @@ const Mermaid = require('./index')({
   debug: false
 })
 
+console.log('Init parser')
 const MermaidParser = require('./parser')
 
 ;(async () => {
@@ -22,6 +23,18 @@ const MermaidParser = require('./parser')
     //console.log(data)
 
     MermaidParser.Chaturbate(data, parseData => {
+      console.log(parseData)
+    })
+
+    MermaidParser.BongaCams(data, parseData => {
+      console.log(parseData)
+    })
+    
+    MermaidParser.xHamsterLive(data, parseData => {
+      console.log(parseData)
+    })
+
+    MermaidParser.Stripchat(data, parseData => {
       console.log(parseData)
     })
   })
