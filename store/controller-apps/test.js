@@ -4,6 +4,6 @@ console.log(controllerApps)
 
 ;(async () => {
 
-  controllerApps.init('')
+  controllerApps.init()
 
 })()
