@@ -156,5 +156,8 @@ module.exports = {
       } catch (e) {
         return false
       }
+    },
+    remove: link => {
+      // todo
     }
 }

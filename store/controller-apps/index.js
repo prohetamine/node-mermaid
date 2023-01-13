@@ -57,43 +57,6 @@ module.exports = {
       }
     },
     get: async () => {
-      /*//const workedApps = getWorkedApps(io)
-      const allApps = await getApps()
-
-      const apps = allApps.filter(aApp => !workedApps.find(wApp => wApp.repo === aApp.repo && wApp.app === aApp.app))
-
-      apps.forEach(async app => {
-        while (true) {
-          const isStartAppProcess = await new Promise(res => {
-            const appProcess = cp.fork(app.entry, [app.repo, app.app, port, app.size])
-
-            const timeId = setTimeout(() => res(true), 10000)
-
-            appProcess.on('close', async (e) => {
-              clearTimeout(timeId)
-
-              try {
-                await npminstall({
-                  root: app.path
-                })
-              } catch (e) {
-                await sleep(5000)
-              }
-
-              res(false)
-            })
-          })
-
-          if (isStartAppProcess) {
-            break
-          }
-
-          await sleep(5000)
-        }
-      })
-
-      return allApps*/
-
       try {
         const virtualRepository = await controllerRepositorys.get()
 
