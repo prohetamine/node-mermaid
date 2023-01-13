@@ -112,7 +112,7 @@ module.exports = {
                     .map(
                       async app => {
                         try {
-                          const { zip, package: { size, main } } = virtualRepository.repositorys.find(_repository => _repository.name === repository).apps.find(_app => _app.name === app)
+                          const { zip, package: { size, main } } = virtualRepository.find(_repository => _repository.name === repository).apps.find(_app => _app.name === app)
 
                           return ({
                             repository,
