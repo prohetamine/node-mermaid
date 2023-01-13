@@ -123,7 +123,7 @@ module.exports = {
                             entry: path.join(appsPath, repository, app, main)
                           })
                         } catch (e) {
-                          const { main, dependencies, size } = JSON.parse(
+                          const { main, size } = JSON.parse(
                             await fs.readFile(
                               path.join(appsPath, repository, app, 'package.json')
                               ,
@@ -226,17 +226,17 @@ module.exports = {
 
       await sleep(500)
 
-      const isUnpacking = await new Promise(async res => {
+      const unpacking = async res => {
         const zipStreamRead = await fs.createReadStream(loadZipPath)
 
-        zipStreamRead.on('error', (e) => {
+        zipStreamRead.on('error', () => {
           progress('read zip stream error', null, 0.42)
           res(false)
         })
 
         const unziping = zipStreamRead.pipe(unzipper.Extract({ path: unpackingAppsPath }))
 
-        unziping.on('error', (e) => {
+        unziping.on('error', () => {
           progress('unzip error', null, 0.45)
           res(false)
         })
@@ -245,7 +245,9 @@ module.exports = {
           progress(null, 'unziping app ok', 0.5)
           res(true)
         })
-      })
+      }
+
+      const isUnpacking = await new Promise(unpacking)
 
       if (!isUnpacking) {
         return false
@@ -300,8 +302,8 @@ module.exports = {
       return true
     },
     executter: (apps, port = 6969) => {
-      apps.forEach(app =>
-        cp.fork(app.entry, [app.repo, app.app, port, app.size])
-      )
+      apps.forEach(app => {
+        cp.fork(app.entry, [app.repository, app.app, port, app.size])
+      })
     }
 }

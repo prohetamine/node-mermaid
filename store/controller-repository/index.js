@@ -1,17 +1,13 @@
+/*eslint no-useless-escape: "error"*/
+
 const fs              = require('fs-extra')
     , appData         = require('app-data-folder')
     , path            = require('path')
     , axios           = require('axios')
-    , controllerApps  = require('./../controller-apps')
 
 const basePath = appData('MermaidStoreData-test')
     , repositorysPath = path.join(basePath, 'repositorys.json')
     , appsPath = path.join(basePath, 'apps')
-
-const getInstalledAppsCount = async () => {
-  const apps = await controllerApps.get()
-  return apps.length
-}
 
 module.exports = {
     repositorysPath,
@@ -27,14 +23,7 @@ module.exports = {
             , isRepositorysConfig = await fs.exists(repositorysPath)
 
         if (!isRepositorysConfig) {
-          await fs.writeFile(repositorysPath, JSON.stringify({
-            length: {
-              apps: 0,
-              installed: await getInstalledAppsCount(),
-              repositorys: 0
-            },
-            repositorys: []
-          }))
+          await fs.writeFile(repositorysPath, JSON.stringify([]))
         }
         return true
       } catch (e) {
@@ -47,20 +36,13 @@ module.exports = {
           await fs.readFile(repositorysPath, 'utf8')
         )
       } catch (e) {
-        return {
-          length: {
-            apps: 0,
-            installed: await getInstalledAppsCount(),
-            repositorys: 0
-          },
-          repositorys: []
-        }
+        return []
       }
     },
     update: async link => {
       try {
         const linkPath = link.match(/:[^\\.]+/)[0].slice(1)
-            , name = linkPath.match(/[^\/]+$/)[0]
+            , name = linkPath.match(/[^\\/]+$/)[0]
 
         const apps = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`)
                                 .then(({ data: apps }) => apps)
@@ -70,7 +52,7 @@ module.exports = {
             async ({ link }) => {
               const linkPath = link.match(/:[^\\.]+/)[0].slice(1)
 
-              const name = linkPath.match(/[^\/]+$/)[0]
+              const name = linkPath.match(/[^\\/]+$/)[0]
 
               const package = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/package.json`)
                                         .then(({ data }) => data)
@@ -84,16 +66,13 @@ module.exports = {
             }
           )
         )
-
-        const appsInstalledCount = await getInstalledAppsCount()
-
-        let lastRepoData = JSON.parse(
+        let lastRepositorys = JSON.parse(
           await fs.readFile(repositorysPath, 'utf8')
         )
 
-        const index = lastRepoData.repositorys.findIndex(repository => repository.link === link)
+        const index = lastRepositorys.findIndex(repository => repository.link === link)
 
-        lastRepoData.repositorys[index] = {
+        lastRepositorys[index] = {
           name,
           link,
           apps: fullAppsInfo,
@@ -102,14 +81,7 @@ module.exports = {
 
         await fs.writeFile(
           repositorysPath,
-          JSON.stringify({
-            length: {
-              apps: lastRepoData.repositorys.reduce((calc, repository) => calc + repository.apps.length, 0),
-              installed: appsInstalledCount,
-              repositorys: lastRepoData.repositorys.length
-            },
-            repositorys: lastRepoData.repositorys
-          })
+          JSON.stringify(lastRepositorys)
         )
 
         return true
@@ -121,7 +93,7 @@ module.exports = {
     add: async link => {
       try {
         const linkPath = link.match(/:[^\\.]+/)[0].slice(1)
-            , name = linkPath.match(/[^\/]+$/)[0]
+            , name = linkPath.match(/[^\\/]+$/)[0]
             , workFolderRepository = path.join(appsPath, name)
 
         const apps = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`)
@@ -132,7 +104,7 @@ module.exports = {
             async ({ link }) => {
               const linkPath = link.match(/:[^\\.]+/)[0].slice(1)
 
-              const name = linkPath.match(/[^\/]+$/)[0]
+              const name = linkPath.match(/[^\\/]+$/)[0]
 
               const package = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/package.json`)
                                         .then(({ data }) => data)
@@ -147,44 +119,28 @@ module.exports = {
           )
         )
 
-        const appsInstalledCount = await getInstalledAppsCount()
-
-        let lastRepoData = null
+        let lastRepositorys = null
 
         try {
-          lastRepoData = JSON.parse(
+          lastRepositorys = JSON.parse(
             await fs.readFile(repositorysPath, 'utf8')
           )
         } catch (e) {
-          lastRepoData = {
-            length: {
-              apps: 0,
-              installed: appsInstalledCount,
-              repositorys: 0
-            },
-            repositorys: []
-          }
+          lastRepositorys = []
         }
 
-        if (lastRepoData.repositorys.length === 0 || !lastRepoData.repositorys.find(repository => repository.link === link)) {
+        if (lastRepositorys.length === 0 || !lastRepositorys.find(repository => repository.link === link)) {
           await fs.writeFile(
             repositorysPath,
-            JSON.stringify({
-              length: {
-                apps: lastRepoData.length.apps + fullAppsInfo.length,
-                installed: appsInstalledCount,
-                repositorys: lastRepoData.repositorys.length + 1
-              },
-              repositorys: [
-                ...lastRepoData.repositorys,
-                {
-                  name,
-                  link,
-                  apps: fullAppsInfo,
-                  date: new Date() - 0
-                }
-              ]
-            })
+            JSON.stringify([
+              ...lastRepositorys,
+              {
+                name,
+                link,
+                apps: fullAppsInfo,
+                date: new Date() - 0
+              }
+            ])
           )
 
           const isWorkFolderRepository = await fs.exists(workFolderRepository)

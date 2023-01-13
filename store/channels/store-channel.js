@@ -1,6 +1,6 @@
-const sleep = require('sleep-promise')
 const controllerApps = require('./../controller-apps')
-const controllerRepositorys = require('./../controller-repository')
+    , controllerRepositorys = require('./../controller-repository')
+    , executter = require('./../executter')
 
 module.exports = io => {
   io.on('connection', socket => {
@@ -19,9 +19,11 @@ module.exports = io => {
         socket.to('app-channel').emit('reload', appData)
       )
 
-      socket.on('get-apps', async () => 
-        socket.emit('get-apps', await controllerApps.get())
-      )
+      socket.on('get-apps', async () => {
+        const apps = await controllerApps.get()
+        socket.emit('get-apps', apps)
+        await executter(io, apps)
+      })
 
       socket.on('get-repositorys', async () => {
         socket.emit('get-repositorys', await controllerRepositorys.get())
@@ -43,7 +45,9 @@ module.exports = io => {
         socket.to('app-channel').emit('exit', appData)
         const isRemove = await controllerApps.remove(appData)
         if (isRemove) {
-          socket.emit('get-apps', await controllerApps.get())
+          const apps = await controllerApps.get()
+          socket.emit('get-apps', apps)
+          await executter(io, apps)
         }
       })
 
@@ -51,12 +55,17 @@ module.exports = io => {
         socket.to('app-channel').emit('exit', appData)
         const isRemove = await controllerApps.remove(appData)
         if (isRemove) {
-          socket.emit('get-apps', await controllerApps.get())
+          const apps = await controllerApps.get()
+          socket.emit('get-apps', apps)
+          await executter(io, apps)
+
           const isInstall = await controllerApps.install(appData, (err, ok, progress) =>
             socket.emit('app-install-progress', { err, ok, progress })
           )
           if (isInstall) {
-            socket.emit('get-apps', await controllerApps.get())
+            const apps = await controllerApps.get()
+            socket.emit('get-apps', apps)
+            await executter(io, apps)
           }
         }
       })
@@ -64,7 +73,9 @@ module.exports = io => {
       socket.on('check-app-installed', async appData => {
         const isInstall = await controllerApps.checkInstalled(appData)
         socket.emit('check-app-installed', isInstall)
-        socket.emit('get-apps', await controllerApps.get())
+        const apps = await controllerApps.get()
+        socket.emit('get-apps', apps)
+        await executter(io, apps)
       })
 
       socket.on('app-install', async appData => {
@@ -73,7 +84,9 @@ module.exports = io => {
         )
 
         if (isInstall) {
-          socket.emit('get-apps', await controllerApps.get())
+          const apps = await controllerApps.get()
+          socket.emit('get-apps', apps)
+          await executter(io, apps)
         }
       })
     }

@@ -4,7 +4,7 @@ const controllerApps = require('./index')
 
   await controllerApps.init()
 
-  const handleInstalled = (err, ok, percent) => {
+  /*const handleInstalled = (err, ok, percent) => {
     console.log(err, ok, percent)
   }
 
@@ -14,7 +14,7 @@ const controllerApps = require('./index')
     app: 'connects',
   }
 
-  const isIstalled = await controllerApps.install(appData, handleInstalled)
+  const isIstalled = await controllerApps.install(appData, handleInstalled)*/
 
   const appsData = await controllerApps.get()
 
