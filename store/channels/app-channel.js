@@ -15,7 +15,7 @@ module.exports = io => {
           const query = socket.handshake.query
               , _query = _socket.handshake.query
 
-          if (query.repo === _query.repo && query.app === _query.app) {
+          if (query.repository === _query.repository && query.app === _query.app) {
             if (query.isDev === 'true' && _query.isDev === 'false') {
               _socket.disconnect()
             } else {
@@ -29,7 +29,10 @@ module.exports = io => {
 
       socket.on('state', state => {
         socket.to('store-channel').emit('app-state', {
-          appData: socket.handshake.query,
+          appData: {
+            repository: socket.handshake.query.repository,
+            app: socket.handshake.query.app
+          },
           state
         })
       })

@@ -1,10 +1,10 @@
 const { io } = require('socket.io-client')
 
 module.exports = ({ debug = false } = { debug: false }) => {
-  const [repo, app, port, size, isDev] = process.argv.slice(2)
+  const [repository, app, port, size, isDev] = process.argv.slice(2)
 
   const socket = io(
-    `http://localhost:${port}?platform=app-transport-channel&repo=${repo}&app=${app}&size=${size}&isDev=${!!isDev}`,
+    `http://localhost:${port}?platform=app-transport-channel&repository=${repository}&app=${app}&size=${size}&isDev=${!!isDev}`,
     {
       options: {
         reconnectionDelayMax: 10000
@@ -46,7 +46,7 @@ module.exports = ({ debug = false } = { debug: false }) => {
     },
     openWindow: ({ file, width = 100, height = 200, alwaysOnTop = false, titleBarStyle = 'default' }) => {
       socket.emit('openWindow', {
-        url: `http://localhost:${port}/${repo}/${app}/public/${file}`,
+        url: `http://localhost:${port}/${repository}/${app}/public/${file}`,
         width,
         height,
         titleBarStyle,

@@ -1,10 +1,10 @@
 const { io } = require('socket.io-client')
 
 module.exports = ({ debug = false } = { debug: false }) => {
-  const [repo, app, port, size, isDev] = process.argv.slice(2)
+  const [repository, app, port, size, isDev] = process.argv.slice(2)
 
   const socket = io(
-    `http://localhost:${port}?platform=app-channel&repo=${repo}&app=${app}&size=${size}&isDev=${!!isDev}`,
+    `http://localhost:${port}?platform=app-channel&repository=${repository}&app=${app}&size=${size}&isDev=${!!isDev}`,
     {
       options: {
         reconnectionDelayMax: 10000
@@ -59,28 +59,28 @@ module.exports = ({ debug = false } = { debug: false }) => {
   })
 
   socket.on('reload', async appData => {
-    if (repo === appData.repo && app === appData.app) {
+    if (repository === appData.repository && app === appData.app) {
       reloadCallback()
       socket.emit('state', state)
     }
   })
 
   socket.on('pause', appData => {
-    if (repo === appData.repo && app === appData.app) {
+    if (repository === appData.repository && app === appData.app) {
       state.isPlay = false
       socket.emit('state', state)
     }
   })
 
   socket.on('play', appData => {
-    if (repo === appData.repo && app === appData.app) {
+    if (repository === appData.repository && app === appData.app) {
       state.isPlay = true
       socket.emit('state', state)
     }
   })
 
-  socket.on('delete', appData => {
-    if (repo === appData.repo && app === appData.app) {
+  socket.on('exit', appData => {
+    if (repository === appData.repository && app === appData.app) {
       process.exit()
     }
   })
