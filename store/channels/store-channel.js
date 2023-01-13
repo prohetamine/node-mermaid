@@ -60,7 +60,7 @@ module.exports = io => {
           await executter(io, apps)
 
           const isInstall = await controllerApps.install(appData, (err, ok, progress) =>
-            socket.emit('app-install-progress', { err, ok, progress })
+            socket.emit('app-install-progress', { err, ok, progress, appData })
           )
           if (isInstall) {
             const apps = await controllerApps.get()
@@ -71,8 +71,8 @@ module.exports = io => {
       })
 
       socket.on('check-app-installed', async appData => {
-        const isInstall = await controllerApps.checkInstalled(appData)
-        socket.emit('check-app-installed', isInstall)
+        const isInstalled = await controllerApps.checkInstalled(appData)
+        socket.emit('check-app-installed', { isInstalled, appData })
         const apps = await controllerApps.get()
         socket.emit('get-apps', apps)
         await executter(io, apps)
@@ -80,7 +80,7 @@ module.exports = io => {
 
       socket.on('app-install', async appData => {
         const isInstall = await controllerApps.install(appData, (err, ok, progress) =>
-          socket.emit('app-install-progress', { err, ok, progress })
+          socket.emit('app-install-progress', { err, ok, progress, appData })
         )
 
         if (isInstall) {

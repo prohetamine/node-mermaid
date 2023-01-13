@@ -18,55 +18,49 @@ module.exports = (extension, callback, debug = false) => {
   }
 
   if (extension.platform === 'Chaturbate') {
-    extension.data.forEach(message => {
+    extension.data.forEach(event => {
+      const parseData = event
+
       try {
-        const parseData = JSON.parse(message.data)
-
-        if (parseData.method === 'onNotify') {
+        if (parseData.name.match(/room:tip_alert/)) {
           try {
-            const arg0 = JSON.parse(parseData.args[0])
+            easyData.events.isTokens = true
+            easyData.tokenCount = parseData.data.amount
 
-            if (arg0.type === 'tip_alert') {
-              easyData.events.isTokens = true
-              easyData.tokenCount = arg0.amount
-
-              if (arg0.is_anonymous_tip) {
-                easyData.isAnon = true
-              } else {
-                easyData.isUser = true
-                easyData.username = arg0.from_username
-              }
-
-              easyData.message = unescape(arg0.message)
-
-              isEasyData = true
+            if (parseData.data.is_anonymous_tip) {
+              easyData.isAnon = true
+            } else {
+              easyData.isUser = true
+              easyData.username = parseData.data.from_username
             }
-          } catch (error) {
-            debug && console.log('!!!!!!!!! onNotify !!!!!!!!!')
+
+            easyData.message = unescape(parseData.data.message)
+
+            isEasyData = true
+          } catch (e) {
+            debug && console.log('!!!!!!!!! room:tip_alert !!!!!!!!!')
             debug && console.log(error)
             debug && console.log(parseData)
           }
         }
 
-        if (parseData.method === 'onRoomMsg') {
+        if (event.name.match(/room:message/)) {
           try {
             easyData.events.isMessage = true
 
-            const { m } = JSON.parse(parseData.args[1])
+            easyData.message = unescape(parseData.data.message)
 
-            easyData.message = unescape(m)
-
-            if (parseData.args[0] === extension.modelUsername) {
+            if (parseData.data.from_user.username === extension.modelUsername) {
               easyData.isModel = true
             } else {
               easyData.isUser = true
             }
 
-            easyData.username = parseData.args[0]
+            easyData.username = parseData.data.from_user.username
 
             isEasyData = true
           } catch (error) {
-            debug && console.log('!!!!!!!!! onRoomMsg !!!!!!!!!')
+            debug && console.log('!!!!!!!!! room:message !!!!!!!!!')
             debug && console.log(error)
             debug && console.log(parseData)
           }

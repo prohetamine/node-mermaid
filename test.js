@@ -23,13 +23,15 @@ const MermaidParser = require('./parser')
     //console.log(data)
 
     MermaidParser.Chaturbate(data, parseData => {
-      console.log(parseData)
+      if (parseData.isEasyData) {
+        console.log(parseData.easyData)
+      }
     })
 
     MermaidParser.BongaCams(data, parseData => {
       console.log(parseData)
     })
-    
+
     MermaidParser.xHamsterLive(data, parseData => {
       console.log(parseData)
     })
