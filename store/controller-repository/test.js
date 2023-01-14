@@ -15,8 +15,8 @@ const controllerRepositorys = require('./index')
     )
   */
 
-  await controllerRepositorys.delete(link, (repository, stop) => {
-    console.log('send stop -> ', repository)
-    stop('app')
+  await controllerRepositorys.delete(link, appData => {
+    console.log(appData)
+    return true
   })
 })()

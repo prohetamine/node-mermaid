@@ -2,7 +2,6 @@ const controllerApps          = require('./../controller-apps')
     , controllerRepositorys   = require('./../controller-repository')
     , getWorkedApps           = require('./../get-worked-apps')
     , executter               = require('./../executter')
-    , repositoryFullDelete    = require('./../repository-full-delete')
 
 module.exports = io => {
   io.on('connection', socket => {
@@ -38,14 +37,14 @@ module.exports = io => {
       })
 
       socket.on('repository-delete', async link => {
-        const apps = await controllerApps.get()
-            , workedApps = getWorkedApps(io)
-
-        const repositoryFullDeleteHandler = await repositoryFullDelete(workedApps, apps, appData => {
-          socket.to('app-channel').emit('exit', appData)
-        })
-
-        const isDelete = await controllerRepositorys.delete(link, repositoryFullDeleteHandler)
+        const isDelete = await controllerRepositorys.delete(
+          link,
+          async appData => {
+            socket.to('app-channel').emit('exit', appData)
+            const isRemove = await controllerApps.delete(appData)
+            return isRemove
+          }
+        )
 
         if (isDelete) {
           const apps = await controllerApps.get()
@@ -63,8 +62,8 @@ module.exports = io => {
 
       socket.on('app-delete', async appData => {
         socket.to('app-channel').emit('exit', appData)
-        const isRemove = await controllerApps.remove(appData)
-        if (isRemove) {
+        const isDelete = await controllerApps.delete(appData)
+        if (isDelete) {
           const apps = await controllerApps.get()
           socket.emit('get-apps', apps)
           const workedApps = getWorkedApps(io)

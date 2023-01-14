@@ -101,11 +101,17 @@ module.exports = {
         return []
       }
     },
-    remove: async ({ repository, app }) => {
+    delete: async ({ repository, app }) => {
       try {
         const workFolderApp = path.join(appsPath, repository, app)
         await fs.rm(workFolderApp, { recursive: true, force: true })
-        return true
+
+        const isWorkFolderApp = await fs.exists(workFolderApp)
+        if (!isWorkFolderApp) {
+          return true
+        } else {
+          return false
+        }
       } catch (e) {
         return false
       }
