@@ -1,8 +1,6 @@
 const express                 = require('express')
-    , app                     = express()
     , path                    = require('path')
     , http                    = require('http')
-    , server                  = http.createServer(app)
     , cors                    = require('cors')
     , { Server }              = require('socket.io')
     , controllerApps          = require('./controller-apps')
@@ -10,6 +8,9 @@ const express                 = require('express')
     , AppChannel              = require('./channels/app-channel')
     , AppTransportChannel     = require('./channels/app-transport-channel')
     , StoreChannel            = require('./channels/store-channel')
+
+const app     = express()
+    , server  = http.createServer(app)
 
 module.exports = ({
   port

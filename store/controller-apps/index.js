@@ -1,31 +1,17 @@
-const fs          = require('fs-extra')
-    , appData     = require('app-data-folder')
-    , path        = require('path')
-    , sleep       = require('sleep-promise')
-    , npminstall  = require('npminstall')
-    , cp          = require('node:child_process')
-    , axios       = require('axios')
-    , unzipper    = require('unzipper')
-    , controllerRepositorys  = require('./../controller-repository')
+const fs                      = require('fs-extra')
+    , appData                 = require('app-data-folder')
+    , path                    = require('path')
+    , sleep                   = require('sleep-promise')
+    , npminstall              = require('npminstall')
+    , cp                      = require('node:child_process')
+    , axios                   = require('axios')
+    , unzipper                = require('unzipper')
+    , controllerRepositorys   = require('./../controller-repository')
+    , open                    = require('open')
 
 const basePath = appData('MermaidStoreData-test')
     , appsPath = path.join(basePath, 'apps')
     , unpackingAppsPath = path.join(basePath, 'unpacking-apps')
-
-/*const getWorkedApps = io => {
-  const clients = io.sockets.adapter.rooms.get('app-channel')
-
-  if (clients) {
-    return Object.keys(
-      Object
-        .fromEntries(
-          clients.entries()
-        )
-    ).map(id => ({ ...io.sockets.sockets.get(id).handshake.query }))
-  } else {
-    return []
-  }
-}*/
 
 module.exports = {
     appsPath,
@@ -135,8 +121,8 @@ module.exports = {
         return false
       }
     },
-    install: async ({ zip, app, repository }, progress) => {
-      progress(null, `start installing ${repository}/${app}`, 0)
+    install: async ({ zip, app, repository }, onProgress) => {
+      onProgress(null, `start installing ${repository}/${app}`, 0)
       const loadZipPath = path.join(unpackingAppsPath, `${repository}-${app}.zip`)
           , unpackingAppPath = path.join(unpackingAppsPath, `${app}-main`)
           , workFolderRepository = path.join(appsPath, repository)
@@ -148,11 +134,11 @@ module.exports = {
         const isWorkFolderApp = await fs.exists(workFolderApp)
 
         if (isWorkFolderApp) {
-          progress(null, 'app is already installed', 1)
+          onProgress(null, 'app is already installed', 1)
           return true
         }
       } catch (e) {
-        progress('check installerd app error', null, 0.1)
+        onProgress('check installerd app error', null, 0.1)
         return false
       }
 
@@ -166,14 +152,14 @@ module.exports = {
           method: 'GET',
           responseType: 'arraybuffer',
           onDownloadProgress: (e) => {
-            progress(null, 'download zip app', (e.progress * 0.3) || 0.3)
+            onProgress(null, 'download zip app', (e.progress * 0.3) || 0.3)
           }
         })
 
         loadData = data
-        progress(null, 'load zip app ok', 0.32)
+        onProgress(null, 'load zip app ok', 0.32)
       } catch (e) {
-        progress('load zip app error', null, 0.32)
+        onProgress('load zip app error', null, 0.32)
         return false
       }
 
@@ -181,9 +167,9 @@ module.exports = {
 
       try {
         await fs.writeFile(loadZipPath, loadData)
-        progress(null, 'write zip app ok', 0.4)
+        onProgress(null, 'write zip app ok', 0.4)
       } catch (e) {
-        progress('write zip app error', null, 0.35)
+        onProgress('write zip app error', null, 0.35)
         return false
       }
 
@@ -193,19 +179,19 @@ module.exports = {
         const zipStreamRead = await fs.createReadStream(loadZipPath)
 
         zipStreamRead.on('error', () => {
-          progress('read zip stream error', null, 0.42)
+          onProgress('read zip stream error', null, 0.42)
           res(false)
         })
 
         const unziping = zipStreamRead.pipe(unzipper.Extract({ path: unpackingAppsPath }))
 
         unziping.on('error', () => {
-          progress('unzip error', null, 0.45)
+          onProgress('unzip error', null, 0.45)
           res(false)
         })
 
         unziping.on('finish', () => {
-          progress(null, 'unziping app ok', 0.5)
+          onProgress(null, 'unziping app ok', 0.5)
           res(true)
         })
       }
@@ -222,9 +208,9 @@ module.exports = {
         await npminstall({
           root: unpackingAppPath
         })
-        progress(null, 'install modules ok', 0.8)
+        onProgress(null, 'install modules ok', 0.8)
       } catch (e) {
-        progress('install modules error', null, 0.6)
+        onProgress('install modules error', null, 0.6)
         return false
       }
 
@@ -233,10 +219,10 @@ module.exports = {
 
         if (!isWorkFolderRepository) {
           await fs.mkdir(workFolderRepository)
-          progress(null, 'create work folder repository ok', 0.85)
+          onProgress(null, 'create work folder repository ok', 0.85)
         }
       } catch (e) {
-        progress('create work folder repository error', null, 0.85)
+        onProgress('create work folder repository error', null, 0.85)
         return false
       }
 
@@ -244,9 +230,9 @@ module.exports = {
 
       try {
         await fs.rename(unpackingAppPath, workFolderApp)
-        progress(null, 'move work folder ok', 0.9)
+        onProgress(null, 'move work folder ok', 0.9)
       } catch (e) {
-        progress('move work folder error', null, 0.9)
+        onProgress('move work folder error', null, 0.9)
         return false
       }
 
@@ -254,9 +240,9 @@ module.exports = {
 
       try {
         await fs.rm(path.join(loadZipPath))
-        progress(null, 'remove zip app ok', 1)
+        onProgress(null, 'remove zip app ok', 1)
       } catch (e) {
-        progress('remove zip app error', null, 1)
+        onProgress('remove zip app error', null, 1)
         return false
       }
 
@@ -268,5 +254,14 @@ module.exports = {
       apps.forEach(app => {
         cp.fork(app.entry, [app.repository, app.app, port, app.size])
       })
+    },
+    openWorkDir: async ({ repository, app }) => {
+      try {
+        const workFolderApp = path.join(appsPath, repository, app)
+        await open(workFolderApp)
+        return true
+      } catch (e) {
+        return false
+      }
     }
 }

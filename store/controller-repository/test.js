@@ -3,11 +3,20 @@ const controllerRepositorys = require('./index')
 ;(async () => {
   controllerRepositorys.init()
 
-  controllerRepositorys.add('git@github.com:prohetamine/official.git')
+  const link = 'git@github.com:prohetamine/official.git'
 
-  controllerRepositorys.update('git@github.com:prohetamine/official.git')
+  await controllerRepositorys.add(link)
 
-  console.log(controllerRepositorys.get())
+  await controllerRepositorys.update(link)
 
-  controllerRepositorys.remove()
+  /*
+    console.log(
+      await controllerRepositorys.get()
+    )
+  */
+
+  await controllerRepositorys.delete(link, (repository, stop) => {
+    console.log('send stop -> ', repository)
+    stop('app')
+  })
 })()

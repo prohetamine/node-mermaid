@@ -35,4 +35,11 @@ const controllerApps = require('./index')
     repository: 'official',
     app: 'connects'
   })*/
+
+  /*
+    await controllerApps.openWorkDir({
+      repository: 'official',
+      app: 'connects'
+    })
+  */
 })()

@@ -42,23 +42,23 @@ module.exports = {
     update: async link => {
       try {
         const linkPath = link.match(/:[^\\.]+/)[0].slice(1)
-            , name = linkPath.match(/[^\\/]+$/)[0]
+            , repository = linkPath.match(/[^\\/]+$/)[0]
 
         const apps = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`)
                                 .then(({ data: apps }) => apps)
 
         const fullAppsInfo = await Promise.all(
           apps.map(
-            async ({ link }) => {
+            async (link) => {
               const linkPath = link.match(/:[^\\.]+/)[0].slice(1)
 
-              const name = linkPath.match(/[^\\/]+$/)[0]
+              const repository = linkPath.match(/[^\\/]+$/)[0]
 
               const package = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/package.json`)
                                         .then(({ data }) => data)
 
               return ({
-                name,
+                name: repository,
                 zip: `https://codeload.github.com/${linkPath}/zip/refs/heads/main`,
                 package,
                 link
@@ -73,7 +73,7 @@ module.exports = {
         const index = lastRepositorys.findIndex(repository => repository.link === link)
 
         lastRepositorys[index] = {
-          name,
+          name: repository,
           link,
           apps: fullAppsInfo,
           date: new Date() - 0
@@ -93,24 +93,24 @@ module.exports = {
     add: async link => {
       try {
         const linkPath = link.match(/:[^\\.]+/)[0].slice(1)
-            , name = linkPath.match(/[^\\/]+$/)[0]
-            , workFolderRepository = path.join(appsPath, name)
+            , repository = linkPath.match(/[^\\/]+$/)[0]
+            , workFolderRepository = path.join(appsPath, repository)
 
         const apps = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`)
                                 .then(({ data: apps }) => apps)
 
         const fullAppsInfo = await Promise.all(
           apps.map(
-            async ({ link }) => {
+            async link => {
               const linkPath = link.match(/:[^\\.]+/)[0].slice(1)
 
-              const name = linkPath.match(/[^\\/]+$/)[0]
+              const repository = linkPath.match(/[^\\/]+$/)[0]
 
               const package = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/package.json`)
                                         .then(({ data }) => data)
 
               return ({
-                name,
+                name: repository,
                 zip: `https://codeload.github.com/${linkPath}/zip/refs/heads/main`,
                 package,
                 link
@@ -157,7 +157,34 @@ module.exports = {
         return false
       }
     },
-    remove: link => {
-      // todo
+    delete: async (link, onExit) => {
+      try {
+        const linkPath = link.match(/:[^\\.]+/)[0].slice(1)
+            , repository = linkPath.match(/[^\\/]+$/)[0]
+            , workFolderRepository = path.join(appsPath, repository)
+
+        new Promise(res => {
+          const stack = []
+
+          const stackingApps = appPath => stack.push(appPath)
+
+          const onExitEnd = () => {
+            console.log(stack, 'ready delete')
+            console.log(workFolderRepository)
+
+            res()
+          }
+
+          onExit(
+            repository,
+            stackingApps,
+            onExitEnd
+          )
+        })
+
+        return true
+      } catch (e) {
+        return false
+      }
     }
 }

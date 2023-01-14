@@ -1,6 +1,8 @@
-const controllerApps = require('./../controller-apps')
-    , controllerRepositorys = require('./../controller-repository')
-    , executter = require('./../executter')
+const controllerApps          = require('./../controller-apps')
+    , controllerRepositorys   = require('./../controller-repository')
+    , getWorkedApps           = require('./../get-worked-apps')
+    , executter               = require('./../executter')
+    , repositoryFullDelete    = require('./../repository-full-delete')
 
 module.exports = io => {
   io.on('connection', socket => {
@@ -22,19 +24,37 @@ module.exports = io => {
       socket.on('get-apps', async () => {
         const apps = await controllerApps.get()
         socket.emit('get-apps', apps)
-        await executter(io, apps)
+        const workedApps = getWorkedApps(io)
+        await executter(workedApps, apps)
       })
 
       socket.on('get-repositorys', async () => {
         socket.emit('get-repositorys', await controllerRepositorys.get())
       })
 
-      socket.on('add-repository', async link => {
+      socket.on('repository-add', async link => {
         await controllerRepositorys.add(link)
         socket.emit('get-repositorys', await controllerRepositorys.get())
       })
 
-      socket.on('update-repository', async link => {
+      socket.on('repository-delete', async link => {
+        const apps = await controllerApps.get()
+            , workedApps = getWorkedApps(io)
+
+        const repositoryFullDeleteHandler = await repositoryFullDelete(workedApps, apps, appData => {
+          socket.to('app-channel').emit('exit', appData)
+        })
+
+        const isDelete = await controllerRepositorys.delete(link, repositoryFullDeleteHandler)
+
+        if (isDelete) {
+          const apps = await controllerApps.get()
+          socket.emit('get-apps', apps)
+          socket.emit('get-repositorys', await controllerRepositorys.get())
+        }
+      })
+
+      socket.on('repository-update', async link => {
         const isUpdate = await controllerRepositorys.update(link)
         if (isUpdate) {
           socket.emit('get-repositorys', await controllerRepositorys.get())
@@ -47,7 +67,8 @@ module.exports = io => {
         if (isRemove) {
           const apps = await controllerApps.get()
           socket.emit('get-apps', apps)
-          await executter(io, apps)
+          const workedApps = getWorkedApps(io)
+          await executter(workedApps, apps)
         }
       })
 
@@ -57,15 +78,23 @@ module.exports = io => {
         if (isRemove) {
           const apps = await controllerApps.get()
           socket.emit('get-apps', apps)
-          await executter(io, apps)
+          const workedApps = getWorkedApps(io)
+          await executter(workedApps, apps)
 
           const isInstall = await controllerApps.install(appData, (err, ok, progress) =>
-            socket.emit('app-install-progress', { err, ok, progress, appData })
+            socket.emit('app-install-progress', {
+              type: 2,
+              err,
+              ok,
+              progress,
+              appData
+            })
           )
           if (isInstall) {
             const apps = await controllerApps.get()
             socket.emit('get-apps', apps)
-            await executter(io, apps)
+            const workedApps = getWorkedApps(io)
+            await executter(workedApps, apps)
           }
         }
       })
@@ -75,19 +104,31 @@ module.exports = io => {
         socket.emit('check-app-installed', { isInstalled, appData })
         const apps = await controllerApps.get()
         socket.emit('get-apps', apps)
-        await executter(io, apps)
+        const workedApps = getWorkedApps(io)
+        await executter(workedApps, apps)
       })
 
       socket.on('app-install', async appData => {
         const isInstall = await controllerApps.install(appData, (err, ok, progress) =>
-          socket.emit('app-install-progress', { err, ok, progress, appData })
+          socket.emit('app-install-progress', {
+            type: 1,
+            err,
+            ok,
+            progress,
+            appData
+          })
         )
 
         if (isInstall) {
           const apps = await controllerApps.get()
           socket.emit('get-apps', apps)
-          await executter(io, apps)
+          const workedApps = getWorkedApps(io)
+          await executter(workedApps, apps)
         }
+      })
+
+      socket.on('app-work-folder', async appData => {
+        await controllerApps.openWorkDir(appData)
       })
     }
   })
