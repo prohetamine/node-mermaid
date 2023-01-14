@@ -13,261 +13,275 @@ const basePath = appData('MermaidStoreData-test')
     , appsPath = path.join(basePath, 'apps')
     , unpackingAppsPath = path.join(basePath, 'unpacking-apps')
 
+const init = async() => {
+  try {
+    const isBaseFolder = await fs.exists(basePath)
+
+    if (!isBaseFolder) {
+      await fs.mkdir(basePath)
+    }
+
+    const appsPath = path.join(basePath, 'apps')
+        , isAppsFolder = await fs.exists(appsPath)
+
+    if (!isAppsFolder) {
+      await fs.mkdir(appsPath)
+    }
+
+    const unpackingAppsPath = path.join(basePath, 'unpacking-apps')
+        , isUnpackingAppsPath = await fs.exists(unpackingAppsPath)
+
+    if (!isUnpackingAppsPath) {
+      await fs.mkdir(unpackingAppsPath)
+    }
+
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
+const get = async () => {
+  try {
+    const virtualRepository = await controllerRepositorys.get()
+
+    const repositorys = await fs.readdir(appsPath)
+
+    const apps = await Promise.all(
+      repositorys
+        .filter(repository => repository !== '.DS_Store')
+        .map(
+          async repository => {
+            const apps = await fs.readdir(path.join(appsPath, repository))
+
+            return Promise.all(
+              apps
+                .filter(app => app !== '.DS_Store')
+                .map(
+                  async app => {
+                    try {
+                      const { zip, package: { size, main } } = virtualRepository.find(_repository => _repository.name === repository).apps.find(_app => _app.name === app)
+
+                      return ({
+                        repository,
+                        app,
+                        size,
+                        zip,
+                        path: path.join(appsPath, repository, app),
+                        entry: path.join(appsPath, repository, app, main)
+                      })
+                    } catch (e) {
+                      const { main, size } = JSON.parse(
+                        await fs.readFile(
+                          path.join(appsPath, repository, app, 'package.json')
+                          ,
+                          'utf8'
+                        )
+                      )
+
+                      return ({
+                        repository,
+                        app,
+                        size,
+                        zip: false,
+                        path: path.join(appsPath, repository, app),
+                        entry: path.join(appsPath, repository, app, main)
+                      })
+                    }
+                  }
+                )
+            )
+          }
+        )
+    )
+
+    return apps.flat()
+  } catch (e) {
+    return []
+  }
+}
+
+const _delete = async ({ repository, app }) => {
+  try {
+    const workFolderApp = path.join(appsPath, repository, app)
+    await fs.rm(workFolderApp, { recursive: true, force: true })
+
+    const isWorkFolderApp = await fs.exists(workFolderApp)
+    if (!isWorkFolderApp) {
+      return true
+    } else {
+      return false
+    }
+  } catch (e) {
+    return false
+  }
+}
+
+const checkInstalled = async ({ app, repository }) => {
+  const workFolderApp = path.join(appsPath, repository, app)
+
+  try {
+    const isWorkFolderApp = await fs.exists(workFolderApp)
+
+    return isWorkFolderApp
+  } catch (e) {
+    return false
+  }
+}
+
+const install = async ({ zip, app, repository }, onProgress) => {
+  onProgress(null, `start installing ${repository}/${app}`, 0)
+  const loadZipPath = path.join(unpackingAppsPath, `${repository}-${app}.zip`)
+      , unpackingAppPath = path.join(unpackingAppsPath, `${app}-main`)
+      , workFolderRepository = path.join(appsPath, repository)
+      , workFolderApp = path.join(appsPath, repository, app)
+
+  await sleep(500)
+
+  try {
+    const isWorkFolderApp = await fs.exists(workFolderApp)
+
+    if (isWorkFolderApp) {
+      onProgress(null, 'app is already installed', 1)
+      return true
+    }
+  } catch (e) {
+    onProgress('check installerd app error', null, 0.1)
+    return false
+  }
+
+  await sleep(500)
+
+  let loadData = null
+
+  try {
+    const { data } = await axios({
+      url: zip,
+      method: 'GET',
+      responseType: 'arraybuffer',
+      onDownloadProgress: (e) => {
+        onProgress(null, 'download zip app', (e.progress * 0.3) || 0.3)
+      }
+    })
+
+    loadData = data
+    onProgress(null, 'load zip app ok', 0.32)
+  } catch (e) {
+    onProgress('load zip app error', null, 0.32)
+    return false
+  }
+
+  await sleep(500)
+
+  try {
+    await fs.writeFile(loadZipPath, loadData)
+    onProgress(null, 'write zip app ok', 0.4)
+  } catch (e) {
+    onProgress('write zip app error', null, 0.35)
+    return false
+  }
+
+  await sleep(500)
+
+  const unpacking = async res => {
+    const zipStreamRead = await fs.createReadStream(loadZipPath)
+
+    zipStreamRead.on('error', () => {
+      onProgress('read zip stream error', null, 0.42)
+      res(false)
+    })
+
+    const unziping = zipStreamRead.pipe(unzipper.Extract({ path: unpackingAppsPath }))
+
+    unziping.on('error', () => {
+      onProgress('unzip error', null, 0.45)
+      res(false)
+    })
+
+    unziping.on('finish', () => {
+      onProgress(null, 'unziping app ok', 0.5)
+      res(true)
+    })
+  }
+
+  const isUnpacking = await new Promise(unpacking)
+
+  if (!isUnpacking) {
+    return false
+  }
+
+  await sleep(500)
+
+  try {
+    await npminstall({
+      root: unpackingAppPath
+    })
+    onProgress(null, 'install modules ok', 0.8)
+  } catch (e) {
+    onProgress('install modules error', null, 0.6)
+    return false
+  }
+
+  try {
+    const isWorkFolderRepository = await fs.exists(workFolderRepository)
+
+    if (!isWorkFolderRepository) {
+      await fs.mkdir(workFolderRepository)
+      onProgress(null, 'create work folder repository ok', 0.85)
+    }
+  } catch (e) {
+    onProgress('create work folder repository error', null, 0.85)
+    return false
+  }
+
+  await sleep(500)
+
+  try {
+    await fs.rename(unpackingAppPath, workFolderApp)
+    onProgress(null, 'move work folder ok', 0.9)
+  } catch (e) {
+    onProgress('move work folder error', null, 0.9)
+    return false
+  }
+
+  await sleep(500)
+
+  try {
+    await fs.rm(path.join(loadZipPath))
+    onProgress(null, 'remove zip app ok', 1)
+  } catch (e) {
+    onProgress('remove zip app error', null, 1)
+    return false
+  }
+
+  await sleep(500)
+
+  return true
+}
+
+const executter = (apps, port = 6969) => {
+  apps.forEach(app => {
+    cp.fork(app.entry, [app.repository, app.app, port, app.size])
+  })
+}
+
+const openWorkDir = async ({ repository, app }) => {
+  try {
+    const workFolderApp = path.join(appsPath, repository, app)
+    await open(workFolderApp)
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
 module.exports = {
     appsPath,
-    init: async() => {
-      try {
-        const isBaseFolder = await fs.exists(basePath)
-
-        if (!isBaseFolder) {
-          await fs.mkdir(basePath)
-        }
-
-        const appsPath = path.join(basePath, 'apps')
-            , isAppsFolder = await fs.exists(appsPath)
-
-        if (!isAppsFolder) {
-          await fs.mkdir(appsPath)
-        }
-
-        const unpackingAppsPath = path.join(basePath, 'unpacking-apps')
-            , isUnpackingAppsPath = await fs.exists(unpackingAppsPath)
-
-        if (!isUnpackingAppsPath) {
-          await fs.mkdir(unpackingAppsPath)
-        }
-
-        return true
-      } catch (e) {
-        return false
-      }
-    },
-    get: async () => {
-      try {
-        const virtualRepository = await controllerRepositorys.get()
-
-        const repositorys = await fs.readdir(appsPath)
-
-        const apps = await Promise.all(
-          repositorys
-            .filter(repository => repository !== '.DS_Store')
-            .map(
-              async repository => {
-                const apps = await fs.readdir(path.join(appsPath, repository))
-
-                return Promise.all(
-                  apps
-                    .filter(app => app !== '.DS_Store')
-                    .map(
-                      async app => {
-                        try {
-                          const { zip, package: { size, main } } = virtualRepository.find(_repository => _repository.name === repository).apps.find(_app => _app.name === app)
-
-                          return ({
-                            repository,
-                            app,
-                            size,
-                            zip,
-                            path: path.join(appsPath, repository, app),
-                            entry: path.join(appsPath, repository, app, main)
-                          })
-                        } catch (e) {
-                          const { main, size } = JSON.parse(
-                            await fs.readFile(
-                              path.join(appsPath, repository, app, 'package.json')
-                              ,
-                              'utf8'
-                            )
-                          )
-
-                          return ({
-                            repository,
-                            app,
-                            size,
-                            zip: false,
-                            path: path.join(appsPath, repository, app),
-                            entry: path.join(appsPath, repository, app, main)
-                          })
-                        }
-                      }
-                    )
-                )
-              }
-            )
-        )
-
-        return apps.flat()
-      } catch (e) {
-        return []
-      }
-    },
-    delete: async ({ repository, app }) => {
-      try {
-        const workFolderApp = path.join(appsPath, repository, app)
-        await fs.rm(workFolderApp, { recursive: true, force: true })
-
-        const isWorkFolderApp = await fs.exists(workFolderApp)
-        if (!isWorkFolderApp) {
-          return true
-        } else {
-          return false
-        }
-      } catch (e) {
-        return false
-      }
-    },
-    checkInstalled: async ({ app, repository }) => {
-      const workFolderApp = path.join(appsPath, repository, app)
-
-      try {
-        const isWorkFolderApp = await fs.exists(workFolderApp)
-
-        return isWorkFolderApp
-      } catch (e) {
-        return false
-      }
-    },
-    install: async ({ zip, app, repository }, onProgress) => {
-      onProgress(null, `start installing ${repository}/${app}`, 0)
-      const loadZipPath = path.join(unpackingAppsPath, `${repository}-${app}.zip`)
-          , unpackingAppPath = path.join(unpackingAppsPath, `${app}-main`)
-          , workFolderRepository = path.join(appsPath, repository)
-          , workFolderApp = path.join(appsPath, repository, app)
-
-      await sleep(500)
-
-      try {
-        const isWorkFolderApp = await fs.exists(workFolderApp)
-
-        if (isWorkFolderApp) {
-          onProgress(null, 'app is already installed', 1)
-          return true
-        }
-      } catch (e) {
-        onProgress('check installerd app error', null, 0.1)
-        return false
-      }
-
-      await sleep(500)
-
-      let loadData = null
-
-      try {
-        const { data } = await axios({
-          url: zip,
-          method: 'GET',
-          responseType: 'arraybuffer',
-          onDownloadProgress: (e) => {
-            onProgress(null, 'download zip app', (e.progress * 0.3) || 0.3)
-          }
-        })
-
-        loadData = data
-        onProgress(null, 'load zip app ok', 0.32)
-      } catch (e) {
-        onProgress('load zip app error', null, 0.32)
-        return false
-      }
-
-      await sleep(500)
-
-      try {
-        await fs.writeFile(loadZipPath, loadData)
-        onProgress(null, 'write zip app ok', 0.4)
-      } catch (e) {
-        onProgress('write zip app error', null, 0.35)
-        return false
-      }
-
-      await sleep(500)
-
-      const unpacking = async res => {
-        const zipStreamRead = await fs.createReadStream(loadZipPath)
-
-        zipStreamRead.on('error', () => {
-          onProgress('read zip stream error', null, 0.42)
-          res(false)
-        })
-
-        const unziping = zipStreamRead.pipe(unzipper.Extract({ path: unpackingAppsPath }))
-
-        unziping.on('error', () => {
-          onProgress('unzip error', null, 0.45)
-          res(false)
-        })
-
-        unziping.on('finish', () => {
-          onProgress(null, 'unziping app ok', 0.5)
-          res(true)
-        })
-      }
-
-      const isUnpacking = await new Promise(unpacking)
-
-      if (!isUnpacking) {
-        return false
-      }
-
-      await sleep(500)
-
-      try {
-        await npminstall({
-          root: unpackingAppPath
-        })
-        onProgress(null, 'install modules ok', 0.8)
-      } catch (e) {
-        onProgress('install modules error', null, 0.6)
-        return false
-      }
-
-      try {
-        const isWorkFolderRepository = await fs.exists(workFolderRepository)
-
-        if (!isWorkFolderRepository) {
-          await fs.mkdir(workFolderRepository)
-          onProgress(null, 'create work folder repository ok', 0.85)
-        }
-      } catch (e) {
-        onProgress('create work folder repository error', null, 0.85)
-        return false
-      }
-
-      await sleep(500)
-
-      try {
-        await fs.rename(unpackingAppPath, workFolderApp)
-        onProgress(null, 'move work folder ok', 0.9)
-      } catch (e) {
-        onProgress('move work folder error', null, 0.9)
-        return false
-      }
-
-      await sleep(500)
-
-      try {
-        await fs.rm(path.join(loadZipPath))
-        onProgress(null, 'remove zip app ok', 1)
-      } catch (e) {
-        onProgress('remove zip app error', null, 1)
-        return false
-      }
-
-      await sleep(500)
-
-      return true
-    },
-    executter: (apps, port = 6969) => {
-      apps.forEach(app => {
-        cp.fork(app.entry, [app.repository, app.app, port, app.size])
-      })
-    },
-    openWorkDir: async ({ repository, app }) => {
-      try {
-        const workFolderApp = path.join(appsPath, repository, app)
-        await open(workFolderApp)
-        return true
-      } catch (e) {
-        return false
-      }
-    }
+    init,
+    get,
+    delete: _delete,
+    checkInstalled,
+    install,
+    executter,
+    openWorkDir
 }

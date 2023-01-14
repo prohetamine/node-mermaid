@@ -184,10 +184,10 @@ const _delete = async (link, onDeleteApp) => {
 }
 
 module.exports = {
-    repositorysPath,
-    init,
-    get,
-    update,
-    add,
-    delete: _delete
+  repositorysPath,
+  init,
+  get,
+  update,
+  add,
+  delete: _delete
 }
