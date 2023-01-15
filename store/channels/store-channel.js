@@ -27,6 +27,17 @@ module.exports = io => {
         await executter(workedApps, apps)
       })
 
+      socket.on('app-connection-state', async appData => {
+        const isConnected = !!getWorkedApps(io)
+                              .find(
+                                ({ app, repository }) =>
+                                  app === appData.app &&
+                                  repository === appData.repository
+                              )
+
+        socket.emit('app-connection-state', { appData, isConnected })
+      })
+
       socket.on('get-repositorys', async () => {
         socket.emit('get-repositorys', await controllerRepositorys.get())
       })
