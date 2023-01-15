@@ -91,7 +91,7 @@ module.exports = io => {
 
       socket.on('app-update', async appData => {
         socket.to('app-channel').emit('exit', appData)
-        const isRemove = await controllerApps.remove(appData)
+        const isRemove = await controllerApps.delete(appData)
         if (isRemove) {
           const apps = await controllerApps.get()
           socket.emit('get-apps', apps)
