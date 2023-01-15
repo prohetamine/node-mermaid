@@ -34,7 +34,7 @@ module.exports = io => {
                                   app === appData.app &&
                                   repository === appData.repository
                               )
-                              
+
         socket.emit('app-connection-state', { appData, isConnected })
       })
 
@@ -79,6 +79,7 @@ module.exports = io => {
       })
 
       socket.on('app-delete', async appData => {
+        socket.emit('app-connection-state', { appData, isConnected: false })
         socket.to('app-channel').emit('exit', appData)
         const isDelete = await controllerApps.delete(appData)
         if (isDelete) {
@@ -91,13 +92,9 @@ module.exports = io => {
 
       socket.on('app-update', async appData => {
         socket.to('app-channel').emit('exit', appData)
-        const isRemove = await controllerApps.delete(appData)
-        if (isRemove) {
-          const apps = await controllerApps.get()
-          socket.emit('get-apps', apps)
-          const workedApps = getWorkedApps(io)
-          await executterApp(workedApps, apps)
-
+        socket.emit('app-connection-state', { appData, isConnected: false })
+        const isDelete = await controllerApps.delete(appData)
+        if (isDelete) {
           const isInstall = await controllerApps.install(
             appData,
             (err, ok, progress) =>
@@ -114,6 +111,17 @@ module.exports = io => {
             socket.emit('get-apps', apps)
             const workedApps = getWorkedApps(io)
             await executterApp(workedApps, apps)
+            socket.emit(
+              'app-connection-state',
+              {
+                appData,
+                isConnected: !!workedApps.find(
+                  ({ app, repository }) =>
+                    app === appData.app &&
+                    repository === appData.repository
+                )
+              }
+            )
           }
         }
       })
