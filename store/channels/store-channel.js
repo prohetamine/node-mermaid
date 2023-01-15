@@ -1,7 +1,7 @@
 const controllerApps          = require('./../controller-apps')
     , controllerRepositorys   = require('./../controller-repository')
     , getWorkedApps           = require('./../get-worked-apps')
-    , executter               = require('./../executter')
+    , executterApp            = require('./../executter-app')
 
 module.exports = io => {
   io.on('connection', socket => {
@@ -24,7 +24,7 @@ module.exports = io => {
         const apps = await controllerApps.get()
         socket.emit('get-apps', apps)
         const workedApps = getWorkedApps(io)
-        await executter(workedApps, apps)
+        await executterApp(workedApps, apps)
       })
 
       socket.on('app-connection-state', async appData => {
@@ -85,7 +85,7 @@ module.exports = io => {
           const apps = await controllerApps.get()
           socket.emit('get-apps', apps)
           const workedApps = getWorkedApps(io)
-          await executter(workedApps, apps)
+          await executterApp(workedApps, apps)
         }
       })
 
@@ -96,7 +96,7 @@ module.exports = io => {
           const apps = await controllerApps.get()
           socket.emit('get-apps', apps)
           const workedApps = getWorkedApps(io)
-          await executter(workedApps, apps)
+          await executterApp(workedApps, apps)
 
           const isInstall = await controllerApps.install(
             appData,
@@ -113,7 +113,7 @@ module.exports = io => {
             const apps = await controllerApps.get()
             socket.emit('get-apps', apps)
             const workedApps = getWorkedApps(io)
-            await executter(workedApps, apps)
+            await executterApp(workedApps, apps)
           }
         }
       })
@@ -124,7 +124,7 @@ module.exports = io => {
         const apps = await controllerApps.get()
         socket.emit('get-apps', apps)
         const workedApps = getWorkedApps(io)
-        await executter(workedApps, apps)
+        await executterApp(workedApps, apps)
       })
 
       socket.on('app-install', async appData => {
@@ -144,7 +144,7 @@ module.exports = io => {
           const apps = await controllerApps.get()
           socket.emit('get-apps', apps)
           const workedApps = getWorkedApps(io)
-          await executter(workedApps, apps)
+          await executterApp(workedApps, apps)
         }
       })
 

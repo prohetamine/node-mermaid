@@ -262,6 +262,7 @@ const install = async ({ zip, app, repository }, onProgress) => {
 
 const executter = (apps, port = 6969) => {
   apps.forEach(app => {
+    console.log(app.entry, [app.repository, app.app, port, app.size])
     cp.fork(app.entry, [app.repository, app.app, port, app.size])
   })
 }
