@@ -34,7 +34,7 @@ module.exports = io => {
                                   app === appData.app &&
                                   repository === appData.repository
                               )
-
+                              
         socket.emit('app-connection-state', { appData, isConnected })
       })
 
