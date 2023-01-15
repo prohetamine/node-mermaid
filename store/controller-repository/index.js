@@ -9,7 +9,7 @@ const basePath = appData('MermaidStoreData-test')
     , repositorysPath = path.join(basePath, 'repositorys.json')
     , appsPath = path.join(basePath, 'apps')
 
-const init = async() => {
+const init = async () => {
   try {
     const isBaseFolder = await fs.exists(basePath)
 
@@ -159,24 +159,77 @@ const add = async link => {
   }
 }
 
-const _delete = async (link, onDeleteApp) => {
+const _delete = async (link, onDeleteApp, onProgress) => {
+  onProgress(null, `start deleting ${link}`, 0)
+
   const linkPath = link.match(/:[^\\.]+/)[0].slice(1)
       , repository = linkPath.match(/[^\\/]+$/)[0]
       , workFolderRepository = path.join(appsPath, repository)
 
-  const repositorys = await get()
+  let repositorys = null
 
-  const isRemoves = await Promise.all(
-    repositorys.find(({ name }) => name === repository).apps.map(
-      ({ name: app }) =>
-        onDeleteApp({ app, repository })
+  try {
+    repositorys = await get()
+    onProgress(null, `get repositorys.. ok`, 0.2)
+  } catch (e) {
+    onProgress(`get repositorys.. error`, null, 0.2)
+    return false
+  }
+
+  let statusApps = []
+
+  try {
+    onProgress(null, `repository search.. ok`, 0.25)
+    statusApps = await Promise.all(
+      repositorys.find(({ name }) => name === repository).apps.map(
+        async ({ name: app }, i, array) => {
+          const step = 0.25 + ((i + 1) / array.length * 0.5)
+          onProgress(null, `start delete ~${repository}/${app}`, step)
+
+          const isDelete = await onDeleteApp({ app, repository })
+          return {
+            app,
+            repository,
+            isDelete
+          }
+        }
+      )
     )
-  )
+  } catch (e) {
+    onProgress(`repository search..`, null, 0.25)
+    return false
+  }
 
-  if (!isRemoves.find(isRemove => isRemove === false)) {
-    await fs.rm(workFolderRepository, { recursive: true, force: true })
-    const newRepositorys = repositorys.filter(({ name }) => name !== repository)
-    await fs.writeFile(repositorysPath, JSON.stringify(newRepositorys))
+  for (let i = 0; i < statusApps.length; i++) {
+    const statusApp = statusApps[i]
+
+    const step = 0.75 + ((i + 1) / statusApps.length * 0.2)
+
+    if (statusApp.isDelete) {
+      onProgress(null, `delete ~${statusApp.repository}/${statusApp.app} ok`, step)
+    } else {
+      onProgress(`delete ~${statusApp.repository}/${statusApp.app} error`, null, step)
+    }
+  }
+
+  if (!statusApps.find(({ isDelete }) => isDelete === false)) {
+    try {
+      await fs.rm(workFolderRepository, { recursive: true, force: true })
+      onProgress(null, `delete work dir ok`, 0.97)
+    } catch (e) {
+      onProgress(`delete work dir error`, null, 0.97)
+      return false
+    }
+
+    try {
+      const newRepositorys = repositorys.filter(({ name }) => name !== repository)
+      await fs.writeFile(repositorysPath, JSON.stringify(newRepositorys))
+      onProgress(null, `overwriting repository ok`, 1)
+    } catch (e) {
+      onProgress(`overwriting work dir error`, null, 0.99)
+      return false
+    }
+
     return true
   } else {
     return false

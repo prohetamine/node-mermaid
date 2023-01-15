@@ -43,7 +43,14 @@ module.exports = io => {
             socket.to('app-channel').emit('exit', appData)
             const isRemove = await controllerApps.delete(appData)
             return isRemove
-          }
+          },
+          (err, ok, progress) =>
+            socket.emit('repository-delete-progress', {
+              err,
+              ok,
+              progress,
+              link
+            })
         )
 
         if (isDelete) {
@@ -80,14 +87,16 @@ module.exports = io => {
           const workedApps = getWorkedApps(io)
           await executter(workedApps, apps)
 
-          const isInstall = await controllerApps.install(appData, (err, ok, progress) =>
-            socket.emit('app-install-progress', {
-              type: 2,
-              err,
-              ok,
-              progress,
-              appData
-            })
+          const isInstall = await controllerApps.install(
+            appData,
+            (err, ok, progress) =>
+              socket.emit('app-install-progress', {
+                type: 2,
+                err,
+                ok,
+                progress,
+                appData
+              })
           )
           if (isInstall) {
             const apps = await controllerApps.get()
@@ -108,14 +117,16 @@ module.exports = io => {
       })
 
       socket.on('app-install', async appData => {
-        const isInstall = await controllerApps.install(appData, (err, ok, progress) =>
-          socket.emit('app-install-progress', {
-            type: 1,
-            err,
-            ok,
-            progress,
-            appData
-          })
+        const isInstall = await controllerApps.install(
+          appData,
+          (err, ok, progress) =>
+            socket.emit('app-install-progress', {
+              type: 1,
+              err,
+              ok,
+              progress,
+              appData
+            })
         )
 
         if (isInstall) {

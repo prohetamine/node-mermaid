@@ -131,6 +131,7 @@ const checkInstalled = async ({ app, repository }) => {
 
 const install = async ({ zip, app, repository }, onProgress) => {
   onProgress(null, `start installing ${repository}/${app}`, 0)
+
   const loadZipPath = path.join(unpackingAppsPath, `${repository}-${app}.zip`)
       , unpackingAppPath = path.join(unpackingAppsPath, `${app}-main`)
       , workFolderRepository = path.join(appsPath, repository)
