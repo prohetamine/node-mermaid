@@ -214,9 +214,34 @@ const install = async ({ zip, app, repository }, onProgress) => {
   await sleep(500)
 
   try {
+    const { dependencies } = JSON.parse(
+      await fs.readFile(path.join(unpackingAppPath, 'package.json'), 'utf8')
+    )
+
+    const modulesFolderPath = path.join(unpackingAppPath, 'node_modules')
+
+    const isModulesFolderPath = await fs.exists(modulesFolderPath)
+
+    if (!isModulesFolderPath) {
+      await fs.mkdir(modulesFolderPath)
+    }
+
+    const modules = Object.keys(dependencies)
+
+    for (let i = 0; i < modules.length; i++) {
+      const moduleFolderPath = path.join(unpackingAppPath, 'node_modules', modules[i])
+
+      const isModuleFolderPath = await fs.exists(moduleFolderPath)
+
+      if (!isModuleFolderPath) {
+        await fs.mkdir(moduleFolderPath)
+      }
+    }
+
     await npminstall({
       root: unpackingAppPath
     })
+
     onProgress(null, 'install modules ok', 0.8)
   } catch (e) {
     onProgress('install modules error', null, 0.6)
@@ -263,7 +288,7 @@ const install = async ({ zip, app, repository }, onProgress) => {
 const executter = (apps, port = 6969) => {
   apps.forEach(app =>
     cp.fork(
-      app.entry, 
+      app.entry,
       [
         app.repository,
         app.app,
