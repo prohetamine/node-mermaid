@@ -213,7 +213,13 @@ const install = async ({ zip, app, repository }, onProgress) => {
   await sleep(500)
 
   try {
-    const cli = path.join(__dirname, '/../../node_modules/npm/bin/npm-cli.js')
+    let cli = path.join(__dirname, '/../../node_modules/npm/bin/npm-cli.js')
+
+    const isDev = await fs.exists(cli)
+
+    if (!isDev) {
+      cli = path.join(__dirname, '/../../../npm/bin/npm-cli.js')
+    }
 
     await new Promise(res => {
       const child = cp.fork(cli, ['install'], { cwd: unpackingAppPath })
