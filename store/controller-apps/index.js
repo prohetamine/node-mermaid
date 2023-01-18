@@ -2,14 +2,13 @@ const fs                      = require('fs-extra')
     , appData                 = require('app-data-folder')
     , path                    = require('path')
     , sleep                   = require('sleep-promise')
-    , npminstall              = require('npminstall')
     , cp                      = require('node:child_process')
     , axios                   = require('axios')
     , unzipper                = require('unzipper')
     , controllerRepositorys   = require('./../controller-repository')
     , open                    = require('open')
 
-const basePath = appData('MermaidStoreData-test')
+const basePath = appData('MermaidStoreData')
     , appsPath = path.join(basePath, 'apps')
     , unpackingAppsPath = path.join(basePath, 'unpacking-apps')
 
@@ -214,32 +213,11 @@ const install = async ({ zip, app, repository }, onProgress) => {
   await sleep(500)
 
   try {
-    const { dependencies } = JSON.parse(
-      await fs.readFile(path.join(unpackingAppPath, 'package.json'), 'utf8')
-    )
+    const cli = path.join(__dirname, '/../../node_modules/npm/bin/npm-cli.js')
 
-    const modulesFolderPath = path.join(unpackingAppPath, 'node_modules')
-
-    const isModulesFolderPath = await fs.exists(modulesFolderPath)
-
-    if (!isModulesFolderPath) {
-      await fs.mkdir(modulesFolderPath)
-    }
-
-    const modules = Object.keys(dependencies)
-
-    for (let i = 0; i < modules.length; i++) {
-      const moduleFolderPath = path.join(unpackingAppPath, 'node_modules', modules[i])
-
-      const isModuleFolderPath = await fs.exists(moduleFolderPath)
-
-      if (!isModuleFolderPath) {
-        await fs.mkdir(moduleFolderPath)
-      }
-    }
-
-    await npminstall({
-      root: unpackingAppPath
+    await new Promise(res => {
+      const child = cp.fork(cli, ['install'], { cwd: unpackingAppPath })
+      child.on('close', res)
     })
 
     onProgress(null, 'install modules ok', 0.8)

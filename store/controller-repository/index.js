@@ -5,7 +5,7 @@ const fs              = require('fs-extra')
     , path            = require('path')
     , axios           = require('axios')
 
-const basePath = appData('MermaidStoreData-test')
+const basePath = appData('MermaidStoreData')
     , repositorysPath = path.join(basePath, 'repositorys.json')
     , appsPath = path.join(basePath, 'apps')
 

@@ -1,6 +1,6 @@
 {
   "name": "node-mermaid",
-  "version": "0.1.333",
+  "version": "0.1.4",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,7 @@
     "fs-extra": "^11.1.0",
     "html-escaper": "^3.0.3",
     "http": "^0.0.1-security",
-    "npminstall": "^7.3.1",
+    "npm": "^9.3.1",
     "open": "^8.4.0",
     "path": "^0.12.7",
     "sleep-promise": "^9.1.0",
