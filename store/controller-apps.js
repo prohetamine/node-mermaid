@@ -46,20 +46,20 @@ const get = async () => {
 
     const repositorys = await fs.readdir(appsPath)
 
-    const apps = await Promise.all(
+    const appsData = await Promise.all(
       repositorys
         .filter(repository => repository !== '.DS_Store')
         .map(
           async repository => {
-            const apps = await fs.readdir(path.join(appsPath, repository))
+            const appsData = await fs.readdir(path.join(appsPath, repository))
 
             return Promise.all(
-              apps
+              appsData
                 .filter(app => app !== '.DS_Store')
                 .map(
                   async app => {
                     try {
-                      const { zip, size, entry } = virtualRepository.find(_repository => _repository.name === repository).apps.find(_app => _app.name === app)
+                      const { zip, size, entry } = virtualRepository.find(repositoryData => repositoryData.repository === repository).appsData.find(appData => appData.app === app)
 
                       return ({
                         repository,
@@ -94,7 +94,7 @@ const get = async () => {
         )
     )
 
-    return apps.flat()
+    return appsData.flat()
   } catch (e) {
     return []
   }
