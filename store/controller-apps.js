@@ -5,7 +5,7 @@ const fs                      = require('fs-extra')
     , cp                      = require('node:child_process')
     , axios                   = require('axios')
     , unzipper                = require('unzipper')
-    , controllerRepositorys   = require('./../controller-repository')
+    , controllerRepositorys   = require('./controller-repository')
     , open                    = require('open')
 
 const basePath = appData('MermaidStoreData')
@@ -59,7 +59,7 @@ const get = async () => {
                 .map(
                   async app => {
                     try {
-                      const { zip, package: { size, main } } = virtualRepository.find(_repository => _repository.name === repository).apps.find(_app => _app.name === app)
+                      const { zip, size, entry } = virtualRepository.find(_repository => _repository.name === repository).apps.find(_app => _app.name === app)
 
                       return ({
                         repository,
@@ -67,7 +67,7 @@ const get = async () => {
                         size,
                         zip,
                         path: path.join(appsPath, repository, app),
-                        entry: path.join(appsPath, repository, app, main)
+                        entry: path.join(appsPath, repository, app, entry)
                       })
                     } catch (e) {
                       const { main, size } = JSON.parse(
@@ -213,12 +213,12 @@ const install = async ({ zip, app, repository }, onProgress) => {
   await sleep(500)
 
   try {
-    let cli = path.join(__dirname, '/../../node_modules/npm/bin/npm-cli.js')
+    let cli = path.join(__dirname, '/../node_modules/npm/bin/npm-cli.js')
 
     const isDev = await fs.exists(cli)
 
     if (!isDev) {
-      cli = path.join(__dirname, '/../../../npm/bin/npm-cli.js')
+      cli = path.join(__dirname, '/../../npm/bin/npm-cli.js')
     }
 
     await new Promise(res => {

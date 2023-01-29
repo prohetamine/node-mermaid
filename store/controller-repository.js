@@ -41,26 +41,28 @@ const get = async () => {
 
 const update = async link => {
   try {
-    const linkPath = link.match(/:[^\\.]+/)[0].slice(1)
+    const linkPath = link.replace(/(git@github.com:|https:\/\/github.com\/|\.git)/gi, '')
         , repository = linkPath.match(/[^\\/]+$/)[0]
 
     const apps = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`)
                             .then(({ data: apps }) => apps)
 
-    const fullAppsInfo = await Promise.all(
+    const appsData = await Promise.all(
       apps.map(
         async (link) => {
-          const linkPath = link.match(/:[^\\.]+/)[0].slice(1)
+          const linkPath = link.replace(/(git@github.com:|https:\/\/github.com\/|\.git)/gi, '')
 
-          const repository = linkPath.match(/[^\\/]+$/)[0]
+          const app = linkPath.match(/[^\\/]+$/)[0]
 
           const package = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/package.json`)
                                     .then(({ data }) => data)
 
           return ({
-            name: repository,
+            repository,
+            app,
             zip: `https://codeload.github.com/${linkPath}/zip/refs/heads/main`,
-            package,
+            size: package.size,
+            entry: package.main,
             link
           })
         }
@@ -73,10 +75,11 @@ const update = async link => {
     const index = lastRepositorys.findIndex(repository => repository.link === link)
 
     lastRepositorys[index] = {
-      name: repository,
+      repository,
       link,
-      apps: fullAppsInfo,
-      date: new Date() - 0
+      appsData,
+      date: new Date() - 0,
+      installed: true
     }
 
     await fs.writeFile(
@@ -91,29 +94,72 @@ const update = async link => {
   }
 }
 
+const find = async link => {
+  try {
+    const linkPath = link.replace(/(git@github.com:|https:\/\/github.com\/|\.git)/gi, '')
+        , repository = linkPath.match(/[^\\/]+$/)[0]
+
+    const apps = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`)
+                            .then(({ data: apps }) => apps)
+
+    const appsData = await Promise.all(
+      apps.map(
+        async (link) => {
+          const linkPath = link.replace(/(git@github.com:|https:\/\/github.com\/|\.git)/gi, '')
+
+          const app = linkPath.match(/[^\\/]+$/)[0]
+
+          const package = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/package.json`)
+                                    .then(({ data }) => data)
+
+          return ({
+            repository,
+            app,
+            zip: `https://codeload.github.com/${linkPath}/zip/refs/heads/main`,
+            size: package.size,
+            entry: package.main,
+            link
+          })
+        }
+      )
+    )
+
+    return {
+      appsData,
+      installed: false,
+      repository,
+      link
+    }
+  } catch (e) {
+    return null
+  }
+}
+
 const add = async link => {
   try {
-    const linkPath = link.match(/:[^\\.]+/)[0].slice(1)
+    const linkPath = link.replace(/(git@github.com:|https:\/\/github.com\/|\.git)/gi, '')
         , repository = linkPath.match(/[^\\/]+$/)[0]
         , workFolderRepository = path.join(appsPath, repository)
 
     const apps = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`)
                             .then(({ data: apps }) => apps)
 
-    const fullAppsInfo = await Promise.all(
+    const appsData = await Promise.all(
       apps.map(
         async link => {
-          const linkPath = link.match(/:[^\\.]+/)[0].slice(1)
+          const linkPath = link.replace(/(git@github.com:|https:\/\/github.com\/|\.git)/gi, '')
 
-          const repository = linkPath.match(/[^\\/]+$/)[0]
+          const app = linkPath.match(/[^\\/]+$/)[0]
 
           const package = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/package.json`)
                                     .then(({ data }) => data)
 
           return ({
-            name: repository,
+            app,
+            repository,
             zip: `https://codeload.github.com/${linkPath}/zip/refs/heads/main`,
-            package,
+            size: package.size,
+            entry: package.main,
             link
           })
         }
@@ -136,10 +182,11 @@ const add = async link => {
         JSON.stringify([
           ...lastRepositorys,
           {
-            name: repository,
+            repository,
             link,
-            apps: fullAppsInfo,
-            date: new Date() - 0
+            appsData,
+            date: new Date() - 0,
+            installed: true
           }
         ])
       )
@@ -162,7 +209,7 @@ const add = async link => {
 const _delete = async (link, onDeleteApp, onProgress) => {
   onProgress(null, `start deleting ${link}`, 0)
 
-  const linkPath = link.match(/:[^\\.]+/)[0].slice(1)
+  const linkPath = link.replace(/(git@github.com:|https:\/\/github.com\/|\.git)/gi, '')
       , repository = linkPath.match(/[^\\/]+$/)[0]
       , workFolderRepository = path.join(appsPath, repository)
 
@@ -181,8 +228,8 @@ const _delete = async (link, onDeleteApp, onProgress) => {
   try {
     onProgress(null, `repository search.. ok`, 0.25)
     statusApps = await Promise.all(
-      repositorys.find(({ name }) => name === repository).apps.map(
-        async ({ name: app }, i, array) => {
+      repositorys.find(({ repository: _repository }) => _repository === repository).appsData.map(
+        async ({ app }, i, array) => {
           const step = 0.25 + ((i + 1) / array.length * 0.5)
           onProgress(null, `start delete ~${repository}/${app}`, step)
 
@@ -222,7 +269,7 @@ const _delete = async (link, onDeleteApp, onProgress) => {
     }
 
     try {
-      const newRepositorys = repositorys.filter(({ name }) => name !== repository)
+      const newRepositorys = repositorys.filter(({ repository: _repository }) => _repository !== repository)
       await fs.writeFile(repositorysPath, JSON.stringify(newRepositorys))
       onProgress(null, `overwriting repository ok`, 1)
     } catch (e) {
@@ -242,5 +289,6 @@ module.exports = {
   get,
   update,
   add,
+  find,
   delete: _delete
 }

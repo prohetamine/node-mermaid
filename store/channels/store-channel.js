@@ -24,17 +24,25 @@ module.exports = io => {
         const apps = await controllerApps.get()
         socket.emit('get-apps', apps)
         const workedApps = getWorkedApps(io)
+        socket.emit('get-worked-apps', workedApps)
         await executterApp(workedApps, apps)
       })
 
+      socket.on('get-worked-apps', async () => {
+        const workedApps = getWorkedApps(io)
+        socket.emit('get-worked-apps', workedApps)
+      })
+
       socket.on('app-connection-state', async appData => {
-        const isConnected = !!getWorkedApps(io)
+        const workedApps = getWorkedApps(io)
+        const isConnected = !!workedApps
                               .find(
                                 ({ app, repository }) =>
                                   app === appData.app &&
                                   repository === appData.repository
                               )
 
+        socket.emit('get-worked-apps', workedApps)
         socket.emit('app-connection-state', { appData, isConnected })
       })
 
@@ -47,6 +55,11 @@ module.exports = io => {
         socket.emit('get-repositorys', await controllerRepositorys.get())
       })
 
+      socket.on('repository-find', async link => {
+        const data = await controllerRepositorys.find(link)
+        socket.emit('repository-find', data)
+      })
+
       socket.on('repository-delete', async link => {
         const isDelete = await controllerRepositorys.delete(
           link,
@@ -55,7 +68,7 @@ module.exports = io => {
             const isRemove = await controllerApps.delete(appData)
             return isRemove
           },
-          (err, ok, progress) =>
+          (err, ok, progress) => 
             socket.emit('repository-delete-progress', {
               err,
               ok,
@@ -86,6 +99,7 @@ module.exports = io => {
           const apps = await controllerApps.get()
           socket.emit('get-apps', apps)
           const workedApps = getWorkedApps(io)
+          socket.emit('get-worked-apps', workedApps)
           await executterApp(workedApps, apps)
         }
       })
@@ -103,13 +117,15 @@ module.exports = io => {
                 err,
                 ok,
                 progress,
-                appData
+                appData,
+                view: true
               })
           )
           if (isInstall) {
             const apps = await controllerApps.get()
             socket.emit('get-apps', apps)
             const workedApps = getWorkedApps(io)
+            socket.emit('get-worked-apps', workedApps)
             await executterApp(workedApps, apps)
             socket.emit(
               'app-connection-state',
@@ -122,6 +138,15 @@ module.exports = io => {
                 )
               }
             )
+
+            socket.emit('app-install-progress', {
+              type: 0,
+              err: '',
+              ok: '',
+              progress: 0,
+              appData,
+              view: false
+            })
           }
         }
       })
@@ -132,6 +157,7 @@ module.exports = io => {
         const apps = await controllerApps.get()
         socket.emit('get-apps', apps)
         const workedApps = getWorkedApps(io)
+        socket.emit('get-worked-apps', workedApps)
         await executterApp(workedApps, apps)
       })
 
@@ -144,7 +170,8 @@ module.exports = io => {
               err,
               ok,
               progress,
-              appData
+              appData,
+              view: true
             })
         )
 
@@ -152,7 +179,17 @@ module.exports = io => {
           const apps = await controllerApps.get()
           socket.emit('get-apps', apps)
           const workedApps = getWorkedApps(io)
+          socket.emit('get-worked-apps', workedApps)
           await executterApp(workedApps, apps)
+
+          socket.emit('app-install-progress', {
+            type: 0,
+            err: '',
+            ok: '',
+            progress: 0,
+            appData,
+            view: false
+          })
         }
       })
 
