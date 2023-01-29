@@ -3,7 +3,7 @@ const controllerApps          = require('./../controller-apps')
     , getWorkedApps           = require('./../get-worked-apps')
     , executterApp            = require('./../executter-app')
 
-module.exports = io => {
+module.exports = (io, openReadmeCallback) => {
   io.on('connection', socket => {
     if (socket.handshake.query.platform === 'store-channel') {
       socket.join('store-channel')
@@ -68,7 +68,7 @@ module.exports = io => {
             const isRemove = await controllerApps.delete(appData)
             return isRemove
           },
-          (err, ok, progress) => 
+          (err, ok, progress) =>
             socket.emit('repository-delete-progress', {
               err,
               ok,
@@ -195,6 +195,10 @@ module.exports = io => {
 
       socket.on('app-work-folder', async appData => {
         await controllerApps.openWorkDir(appData)
+      })
+
+      socket.on('open-readme', async url => {
+        openReadmeCallback(url)
       })
     }
   })

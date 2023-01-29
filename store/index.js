@@ -23,9 +23,10 @@ module.exports = ({
   })
 
   let openWindowCallback = () => {}
+    , openWindowReadmeCallback = () => {}
 
   AppChannel(io)
-  StoreChannel(io)
+  StoreChannel(io, url => openWindowReadmeCallback(url))
   AppTransportChannel(io, data => openWindowCallback(data))
 
   app.use(cors())
@@ -48,6 +49,10 @@ module.exports = ({
     on: (type, callback) => {
       if (type === 'open-window') {
         openWindowCallback = callback
+      }
+
+      if (type === 'open-readme') {
+        openWindowReadmeCallback = callback
       }
     },
     AppChannel: {
