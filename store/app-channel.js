@@ -102,6 +102,8 @@ module.exports = ({ debug = false } = { debug: false }) => {
       if (type === 'reload') {
         reloadCallback = callback
       }
-    }
+    },
+    sendMessage: (platform, text) =>
+      socket.emit('sendMessage', { platform, text })
   })
 }

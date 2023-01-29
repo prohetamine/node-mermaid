@@ -24,8 +24,12 @@ module.exports = ({
 
   let openWindowCallback = () => {}
     , openWindowReadmeCallback = () => {}
+    , appChannelSendMessageCallback = () => {}
 
-  AppChannel(io)
+  AppChannel(
+    io,
+    (platform, text) => appChannelSendMessageCallback(platform, text)
+  )
   StoreChannel(io, url => openWindowReadmeCallback(url))
   AppTransportChannel(io, data => openWindowCallback(data))
 
@@ -58,13 +62,12 @@ module.exports = ({
     AppChannel: {
       writeData: (type, data) => {
         io.sockets.to('app-channel').emit(type, data)
+      },
+      on: (type, callback) => {
+        if (type === 'sendMessage') {
+          appChannelSendMessageCallback = callback
+        }
       }
     }
-    /*sendMessage: (platform, data) => {
-      io.to('extension').emit('input', {
-        platform,
-        text: data
-      })
-    },*/
   }
 }
