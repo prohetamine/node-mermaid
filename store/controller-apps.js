@@ -9,6 +9,7 @@ const fs                      = require('fs-extra')
     , open                    = require('open')
 
 const basePath = appData('MermaidStoreData')
+    , appsMemoryPath = path.join(basePath, 'memory')
     , appsPath = path.join(basePath, 'apps')
     , unpackingAppsPath = path.join(basePath, 'unpacking-apps')
 
@@ -20,18 +21,22 @@ const init = async() => {
       await fs.mkdir(basePath)
     }
 
-    const appsPath = path.join(basePath, 'apps')
-        , isAppsFolder = await fs.exists(appsPath)
+    const isAppsFolder = await fs.exists(appsPath)
 
     if (!isAppsFolder) {
       await fs.mkdir(appsPath)
     }
 
-    const unpackingAppsPath = path.join(basePath, 'unpacking-apps')
-        , isUnpackingAppsPath = await fs.exists(unpackingAppsPath)
+    const isUnpackingAppsPath = await fs.exists(unpackingAppsPath)
 
     if (!isUnpackingAppsPath) {
       await fs.mkdir(unpackingAppsPath)
+    }
+
+    const isMemoryAppsPath = await fs.exists(appsMemoryPath)
+
+    if (!isMemoryAppsPath) {
+      await fs.mkdir(appsMemoryPath)
     }
 
     return true
@@ -135,6 +140,8 @@ const install = async ({ zip, app, repository }, onProgress) => {
       , unpackingAppPath = path.join(unpackingAppsPath, `${app}-main`)
       , workFolderRepository = path.join(appsPath, repository)
       , workFolderApp = path.join(appsPath, repository, app)
+      , memoryFolderRepository = path.join(appsMemoryPath, repository)
+      , memoryFolderApp = path.join(appsMemoryPath, repository, app)
 
   await sleep(500)
 
@@ -242,6 +249,25 @@ const install = async ({ zip, app, repository }, onProgress) => {
   } catch (e) {
     onProgress('create work folder repository error', null, 0.85)
     return false
+  }
+
+  await sleep(500)
+
+  try {
+    const isCreatedMemoryFolderRepository = await fs.exists(memoryFolderRepository)
+
+    if (!isCreatedMemoryFolderRepository) {
+      await fs.mkdir(memoryFolderRepository)
+    }
+
+    const isCreatedMemoryFolderApp = await fs.exists(memoryFolderApp)
+    if (!isCreatedMemoryFolderApp) {
+      await fs.mkdir(memoryFolderApp)
+    }
+
+    onProgress(null, 'create memory folder ok', 0.87)
+  } catch (e) {
+    onProgress('create memory folder error', null, 0.87)
   }
 
   await sleep(500)
