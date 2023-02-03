@@ -49,7 +49,7 @@ const update = async link => {
 
     const appsData = await Promise.all(
       apps.map(
-        async (link) => {
+        async link => {
           const linkPath = link.replace(/(git@github.com:|https:\/\/github.com\/|\.git)/gi, '')
 
           const app = linkPath.match(/[^\\/]+$/)[0]
