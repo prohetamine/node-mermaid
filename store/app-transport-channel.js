@@ -44,13 +44,13 @@ module.exports = ({ debug = false } = { debug: false }) => {
       debug && console.log('readData', data)
       socket.emit('readData', data)
     },
-    openWindow: ({ file, width = 100, height = 200, alwaysOnTop = false, titleBarStyle = 'default' }) => {
+    openWindow: data => {
+      const args = data
+      delete args.file
+
       socket.emit('openWindow', {
         url: `http://localhost:${port}/${repository}/${app}/public/${file}`,
-        width,
-        height,
-        titleBarStyle,
-        alwaysOnTop
+        ...args
       })
     }
   })

@@ -51,15 +51,13 @@ window.MermaidAppTransportChannel = ({ port = 6969, debug = false } = { port: 69
       debug && console.log('bluetoothProvider', data)
       socket.emit('bluetoothProvider', data)
     },
-    openWindow: ({ file, width = 100, height = 200, alwaysOnTop = false, frame = true, titleBarStyle = 'default', proportions = false }) => {
+    openWindow: data => {
+      const args = data
+      delete args.file
+
       socket.emit('openWindow', {
         url: `${window.location.href.replace(window.location.href.match(/[^\/]+.html/)[0], '')}${file}`,
-        width,
-        height,
-        frame,
-        titleBarStyle,
-        alwaysOnTop,
-        proportions
+        ...args
       })
     }
   })

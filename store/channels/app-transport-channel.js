@@ -24,9 +24,9 @@ module.exports = (io, openWindowCallback) => {
         .emit('bluetoothProvider', data)
       })
 
-      socket.on('openWindow', data => {
+      socket.on('openWindow', data =>
         openWindowCallback(data)
-      })
+      )
     }
   })
 }
