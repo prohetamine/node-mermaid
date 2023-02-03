@@ -53,6 +53,8 @@ window.MermaidAppTransportChannel = ({ port = 6969, debug = false } = { port: 69
     },
     openWindow: data => {
       const args = data
+          , file = data.file
+
       delete args.file
 
       socket.emit('openWindow', {

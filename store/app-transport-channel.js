@@ -46,6 +46,8 @@ module.exports = ({ debug = false } = { debug: false }) => {
     },
     openWindow: data => {
       const args = data
+          , file = data.file
+
       delete args.file
 
       socket.emit('openWindow', {
