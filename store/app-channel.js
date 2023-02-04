@@ -79,6 +79,12 @@ module.exports = ({ debug = false } = { debug: false }) => {
     }
   })
 
+  socket.on('state', appData => {
+    if (repository === appData.repository && app === appData.app) {
+      socket.emit('state', state)
+    }
+  })
+
   socket.on('exit', appData => {
     if (repository === appData.repository && app === appData.app) {
       process.exit()

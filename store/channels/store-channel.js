@@ -20,6 +20,10 @@ module.exports = (io, openReadmeCallback) => {
         socket.to('app-channel').emit('reload', appData)
       )
 
+      socket.on('app-state', appData =>
+        socket.to('app-channel').emit('state', appData)
+      )
+
       socket.on('get-apps', async () => {
         const apps = await controllerApps.get()
         socket.emit('get-apps', apps)
