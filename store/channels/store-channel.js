@@ -20,7 +20,7 @@ module.exports = (io, openReadmeCallback) => {
         socket.to('app-channel').emit('reload', appData)
       )
 
-      socket.on('app-state', appData =>
+      socket.on('app-state', appData => 
         socket.to('app-channel').emit('state', appData)
       )
 
