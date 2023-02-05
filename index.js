@@ -67,10 +67,10 @@ module.exports = ({ port = 6767 } = { port: 6767, debug: false }) => {
         dataCallback = callback
       }
     },
-    sendMessage: (platform, data) => {
+    sendMessage: (platform, text) => {
       io.to('extension').emit('input', {
         platform,
-        text: data
+        text
       })
     }
   }
