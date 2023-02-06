@@ -68,6 +68,9 @@ module.exports = ({
           appChannelSendMessageCallback = callback
         }
       }
+    },
+    log: (data) => {
+      io.sockets.to('store-channel').emit('log', data)
     }
   }
 }
