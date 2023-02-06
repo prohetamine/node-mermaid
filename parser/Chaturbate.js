@@ -22,7 +22,7 @@ module.exports = (extension, callback, debug = false) => {
       const parseData = event
 
       try {
-        if (parseData.name.match(/room:tip_alert/)) {
+        if (parseData.name.match(/user:tip_alert|room:tip_alert/)) {
           try {
             easyData.events.isTokens = true
             easyData.tokenCount = parseData.data.amount

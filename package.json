@@ -1,6 +1,6 @@
 {
   "name": "node-mermaid",
-  "version": "2.2.321",
+  "version": "2.2.4",
   "description": "",
   "main": "index.js",
   "scripts": {
