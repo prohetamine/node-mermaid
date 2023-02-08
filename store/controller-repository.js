@@ -47,7 +47,7 @@ const update = async link => {
     const apps = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`)
                             .then(({ data: apps }) => apps)
 
-    const readme = `https://raw.githubusercontent.com/${linkPath}/main/readme.md`
+    const readme = `https://raw.githubusercontent.com/${linkPath}/main/README.md`
 
     const appsData = await Promise.all(
       apps.map(
@@ -105,7 +105,7 @@ const find = async link => {
     const apps = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`)
                             .then(({ data: apps }) => apps)
 
-    const readme = `https://raw.githubusercontent.com/${linkPath}/main/readme.md`
+    const readme = `https://raw.githubusercontent.com/${linkPath}/main/README.md`
 
     const appsData = await Promise.all(
       apps.map(
@@ -150,7 +150,7 @@ const add = async link => {
     const apps = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`)
                             .then(({ data: apps }) => apps)
 
-    const readme = `https://raw.githubusercontent.com/${linkPath}/main/readme.md`
+    const readme = `https://raw.githubusercontent.com/${linkPath}/main/README.md`
 
     const appsData = await Promise.all(
       apps.map(
