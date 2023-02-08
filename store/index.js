@@ -69,8 +69,10 @@ module.exports = ({
         }
       }
     },
-    log: (data) => {
+    search: data => 
+      io.sockets.to('store-channel').emit('search', data)
+    ,
+    log: (data) =>
       io.sockets.to('store-channel').emit('log', data)
-    }
   }
 }
