@@ -4,6 +4,7 @@ const fs              = require('fs-extra')
     , appData         = require('app-data-folder')
     , path            = require('path')
     , axios           = require('axios')
+    , curl           = require('curl')
 
 const basePath = appData('MermaidStoreData')
     , repositorysPath = path.join(basePath, 'repositorys.json')
@@ -41,20 +42,32 @@ const get = async () => {
 
 const update = async link => {
   try {
-    const linkPath = link.replace(/(git@github.com:|https:\/\/github.com\/|\.git)/gi, '')
+    const linkPath = link.replace(/(https:\/\/github.com\/|\.git)/gi, '')
         , repository = linkPath.match(/[^\\/]+$/)[0]
 
-    const apps = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`)
-                            .then(({ data: apps }) => apps)
+    const apps = await new Promise((res, rej) => {
+      curl.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`, {}, (err, response, body) => {
+        if (err) {
+          rej(err)
+        } else {
+          try {
+            res(JSON.parse(body))
+          } catch (e) {
+            rej(e)
+          }
+        }
+      })
+    })
 
     const readme = `https://raw.githubusercontent.com/${linkPath}/main/README.md`
 
     const appsData = await Promise.all(
       apps.map(
         async link => {
-          const linkPath = link.replace(/(git@github.com:|https:\/\/github.com\/|\.git)/gi, '')
+          const linkPath = link.replace(/(https:\/\/github.com\/|\.git)/gi, '')
 
           const app = linkPath.match(/[^\\/]+$/)[0]
+              , author = linkPath.match(/[^\\/]+/)[0]
 
           const package = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/package.json`)
                                     .then(({ data }) => data)
@@ -62,6 +75,7 @@ const update = async link => {
           return ({
             repository,
             app,
+            author,
             zip: `https://codeload.github.com/${linkPath}/zip/refs/heads/main`,
             size: package.size,
             entry: package.main,
@@ -99,20 +113,32 @@ const update = async link => {
 
 const find = async link => {
   try {
-    const linkPath = link.replace(/(git@github.com:|https:\/\/github.com\/|\.git)/gi, '')
+    const linkPath = link.replace(/(https:\/\/github.com\/|\.git)/gi, '')
         , repository = linkPath.match(/[^\\/]+$/)[0]
 
-    const apps = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`)
-                            .then(({ data: apps }) => apps)
+    const apps = await new Promise((res, rej) => {
+      curl.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`, {}, (err, response, body) => {
+        if (err) {
+          rej(err)
+        } else {
+          try {
+            res(JSON.parse(body))
+          } catch (e) {
+            rej(e)
+          }
+        }
+      })
+    })
 
     const readme = `https://raw.githubusercontent.com/${linkPath}/main/README.md`
 
     const appsData = await Promise.all(
       apps.map(
         async (link) => {
-          const linkPath = link.replace(/(git@github.com:|https:\/\/github.com\/|\.git)/gi, '')
+          const linkPath = link.replace(/(https:\/\/github.com\/|\.git)/gi, '')
 
           const app = linkPath.match(/[^\\/]+$/)[0]
+              , author = linkPath.match(/[^\\/]+/)[0]
 
           const package = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/package.json`)
                                     .then(({ data }) => data)
@@ -120,6 +146,7 @@ const find = async link => {
           return ({
             repository,
             app,
+            author,
             zip: `https://codeload.github.com/${linkPath}/zip/refs/heads/main`,
             size: package.size,
             entry: package.main,
@@ -143,21 +170,33 @@ const find = async link => {
 
 const add = async link => {
   try {
-    const linkPath = link.replace(/(git@github.com:|https:\/\/github.com\/|\.git)/gi, '')
+    const linkPath = link.replace(/(https:\/\/github.com\/|\.git)/gi, '')
         , repository = linkPath.match(/[^\\/]+$/)[0]
         , workFolderRepository = path.join(appsPath, repository)
 
-    const apps = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`)
-                            .then(({ data: apps }) => apps)
+    const apps = await new Promise((res, rej) => {
+      curl.get(`https://raw.githubusercontent.com/${linkPath}/main/mermaid-apps.json`, {}, (err, response, body) => {
+        if (err) {
+          rej(err)
+        } else {
+          try {
+            res(JSON.parse(body))
+          } catch (e) {
+            rej(e)
+          }
+        }
+      })
+    })
 
     const readme = `https://raw.githubusercontent.com/${linkPath}/main/README.md`
 
     const appsData = await Promise.all(
       apps.map(
         async link => {
-          const linkPath = link.replace(/(git@github.com:|https:\/\/github.com\/|\.git)/gi, '')
+          const linkPath = link.replace(/(https:\/\/github.com\/|\.git)/gi, '')
 
           const app = linkPath.match(/[^\\/]+$/)[0]
+              , author = linkPath.match(/[^\\/]+/)[0]
 
           const package = await axios.get(`https://raw.githubusercontent.com/${linkPath}/main/package.json`)
                                     .then(({ data }) => data)
@@ -165,6 +204,7 @@ const add = async link => {
           return ({
             app,
             repository,
+            author,
             zip: `https://codeload.github.com/${linkPath}/zip/refs/heads/main`,
             size: package.size,
             entry: package.main,
@@ -218,7 +258,7 @@ const add = async link => {
 const _delete = async (link, onDeleteApp, onProgress) => {
   onProgress(null, `start deleting ${link}`, 0)
 
-  const linkPath = link.replace(/(git@github.com:|https:\/\/github.com\/|\.git)/gi, '')
+  const linkPath = link.replace(/(https:\/\/github.com\/|\.git)/gi, '')
       , repository = linkPath.match(/[^\\/]+$/)[0]
       , workFolderRepository = path.join(appsPath, repository)
 

@@ -66,14 +66,20 @@ module.exports = ({ debug = false } = { debug: false }) => {
   })
 
   socket.on('pause', appData => {
-    if (repository === appData.repository && app === appData.app) {
+    if (
+      repository === appData.repository && app === appData.app ||
+      '*' === appData.repository && '*' === appData.app
+    ) {
       state.isPlay = false
       socket.emit('state', state)
     }
   })
 
   socket.on('play', appData => {
-    if (repository === appData.repository && app === appData.app) {
+    if (
+      repository === appData.repository && app === appData.app ||
+      '*' === appData.repository && '*' === appData.app
+    ) {
       state.isPlay = true
       socket.emit('state', state)
     }
