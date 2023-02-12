@@ -58,7 +58,7 @@ const get = async () => {
           async repository => {
             const appsData = await fs.readdir(path.join(appsPath, repository))
 
-            return Promise.all(
+            const apps = await Promise.all(
               appsData
                 .filter(app => app !== '.DS_Store')
                 .map(
@@ -75,32 +75,39 @@ const get = async () => {
                         entry: path.join(appsPath, repository, app, entry)
                       })
                     } catch (e) {
-                      const { main, size } = JSON.parse(
-                        await fs.readFile(
-                          path.join(appsPath, repository, app, 'package.json')
-                          ,
-                          'utf8'
+                      try {
+                        const { main, size } = JSON.parse(
+                          await fs.readFile(
+                            path.join(appsPath, repository, app, 'package.json')
+                            ,
+                            'utf8'
+                          )
                         )
-                      )
 
-                      return ({
-                        repository,
-                        app,
-                        size,
-                        zip: false,
-                        path: path.join(appsPath, repository, app),
-                        entry: path.join(appsPath, repository, app, main)
-                      })
+                        return ({
+                          repository,
+                          app,
+                          size,
+                          zip: false,
+                          path: path.join(appsPath, repository, app),
+                          entry: path.join(appsPath, repository, app, main)
+                        })
+                      } catch (e) {
+                        return false
+                      }
                     }
                   }
                 )
             )
+
+            return apps.filter(f => f)
           }
         )
     )
 
     return appsData.flat()
   } catch (e) {
+    console.log(e)
     return []
   }
 }
