@@ -66,6 +66,10 @@ const get = async () => {
                     try {
                       const { zip, size, entry } = virtualRepository.find(repositoryData => repositoryData.repository === repository).appsData.find(appData => appData.app === app)
 
+                      if (!(size === 1 || size === 2)) {
+                        return false
+                      }
+
                       return ({
                         repository,
                         app,
@@ -83,6 +87,10 @@ const get = async () => {
                             'utf8'
                           )
                         )
+
+                        if (!(size === 1 || size === 2)) {
+                          return false
+                        }
 
                         return ({
                           repository,
