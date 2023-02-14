@@ -4599,18 +4599,13 @@ window.MermaidAppTransportChannel = ({ port = 6969, debug = false } = { port: 69
     connectCallback()
   })
 
-  socket.on('disconnect', async () => 
+  socket.on('disconnect', async () =>
     window.close()
   )
 
   socket.on('readData', data => {
     debug && console.log('writeData', data)
     readDataCallbacks.forEach(c => c(data))
-  })
-
-  socket.on('bluetoothProvider', data => {
-    debug && console.log('bluetoothProvider', data)
-    bluetoothProviderCallbacks.forEach(c => c(data))
   })
 
   return ({
@@ -4630,10 +4625,6 @@ window.MermaidAppTransportChannel = ({ port = 6969, debug = false } = { port: 69
     writeData: data => {
       debug && console.log('readData', data)
       socket.emit('readData', data)
-    },
-    bluetoothProvider: data => {
-      debug && console.log('bluetoothProvider', data)
-      socket.emit('bluetoothProvider', data)
     },
     openWindow: data => {
       const args = data

@@ -7,21 +7,15 @@ module.exports = (io, openWindowCallback) => {
       socket.join(`${repository}/${app}`)
 
       socket.on('writeData', data => {
-      socket
-        .to(`${repository}/${app}`)
-        .emit('writeData', data)
+        socket
+          .to(`${repository}/${app}`)
+          .emit('writeData', data)
       })
 
       socket.on('readData', data => {
-      socket
-        .to(`${repository}/${app}`)
-        .emit('readData', data)
-      })
-
-      socket.on('bluetoothProvider', data => {
-      socket
-        .to(`${repository}/${app}`)
-        .emit('bluetoothProvider', data)
+        socket
+          .to(`${repository}/${app}`)
+          .emit('readData', data)
       })
 
       socket.on('openWindow', data =>
