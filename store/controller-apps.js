@@ -64,7 +64,7 @@ const get = async () => {
                 .map(
                   async app => {
                     try {
-                      const { zip, size, entry } = virtualRepository.find(repositoryData => repositoryData.repository === repository).appsData.find(appData => appData.app === app)
+                      const { zip, size, entry, author } = virtualRepository.find(repositoryData => repositoryData.repository === repository).appsData.find(appData => appData.app === app)
 
                       if (!(size === 1 || size === 2)) {
                         return false
@@ -75,6 +75,7 @@ const get = async () => {
                         app,
                         size,
                         zip,
+                        author,
                         path: path.join(appsPath, repository, app),
                         entry: path.join(appsPath, repository, app, entry)
                       })
