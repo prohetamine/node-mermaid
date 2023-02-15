@@ -3,7 +3,7 @@ const fs                    = require('fs')
     , path                  = require('path')
     , appMemoryFolderPath   = require('./app-memory-folder-path')
 
-class MemoryFileJSON {
+class AppMemoryFileJSON {
   constructor (filename, defaultData, interval) {
     this.filepath = path.join(appMemoryFolderPath, `${filename}.json`)
     this.defaultData = defaultData || ({})
@@ -45,11 +45,11 @@ class MemoryFileJSON {
   }
 }
 
-module.exports = MemoryFileJSON
+module.exports = AppMemoryFileJSON
 
 /*
 
-const mfJSON = new MemoryFileJSON('test')
+const mfJSON = new AppMemoryFileJSON('test')
 
 ;(async () => {
   setInterval(() => {
