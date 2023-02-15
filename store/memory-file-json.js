@@ -41,7 +41,7 @@ class MemoryFileJSON {
   }
 
   readInterval () {
-    return this.data
+    return this.data || this.defaultData
   }
 }
 
