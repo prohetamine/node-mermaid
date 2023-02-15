@@ -4,7 +4,7 @@ const fs                    = require('fs')
     , appMemoryFolderPath   = require('./app-memory-folder-path')
 
 class AppMemoryFileJSON {
-  constructor (filename, defaultData, interval) {
+  constructor (filename, defaultData, interval = 10000) {
     this.filepath = path.join(appMemoryFolderPath, `${filename}.json`)
     this.defaultData = defaultData || ({})
 
