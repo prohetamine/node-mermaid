@@ -2,6 +2,7 @@ const express                 = require('express')
     , path                    = require('path')
     , http                    = require('http')
     , cors                    = require('cors')
+    , fs                      = require('fs')
     , { Server }              = require('socket.io')
     , controllerApps          = require('./controller-apps')
     , controllerRepositorys   = require('./controller-repository')
@@ -34,12 +35,21 @@ module.exports = ({
   AppTransportChannel(io, data => openWindowCallback(data))
 
   app.use(cors())
-  app.get('*', (req, res) => {
-    try {
-      res.sendFile(path.join(controllerApps.appsPath, req.originalUrl.replace(/\?.+/, '')))
-    } catch (e) {
-      res.status(404)
-      res.end('Not found')
+  app.get('*', async (req, res) => {
+    const file = path.join(controllerApps.appsPath, req.originalUrl.replace(/\?.+/, ''))
+
+    const isExists = await new Promise(res => {
+      try {
+        fs.exists(file, res)
+      } catch (e) {
+        res(false)
+      }
+    })
+
+    if (isExists) {
+      res.sendFile(file)
+    } else {
+      res.end('')
     }
   })
 
@@ -69,7 +79,7 @@ module.exports = ({
         }
       }
     },
-    search: data => 
+    search: data =>
       io.sockets.to('store-channel').emit('search', data)
     ,
     log: (data) =>
