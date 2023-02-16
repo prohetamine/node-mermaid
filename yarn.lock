@@ -2853,7 +2853,7 @@ signal-exit@^3.0.7:
 
 sleep-promise@^9.1.0:
   version "9.1.0"
-  resolved "https://registry.npmjs.org/sleep-promise/-/sleep-promise-9.1.0.tgz"
+  resolved "https://registry.yarnpkg.com/sleep-promise/-/sleep-promise-9.1.0.tgz#101ebe65700bcd184709da95d960967b02b79d03"
   integrity sha512-UHYzVpz9Xn8b+jikYSD6bqvf754xL2uBUzDFwiU6NcdZeifPr6UfgU43xpkPu67VMS88+TI2PSI7Eohgqf2fKA==
 
 smart-buffer@^4.2.0:

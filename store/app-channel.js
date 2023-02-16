@@ -1,4 +1,5 @@
 const { io } = require('socket.io-client')
+    , sleep = require('sleep-promise')
 
 module.exports = ({ debug = false } = { debug: false }) => {
   const [repository, app, port, size, isDev] = process.argv.slice(2)
@@ -18,6 +19,7 @@ module.exports = ({ debug = false } = { debug: false }) => {
 
   let connectCallback = () => {}
     , statusCallback = () => {}
+    , stateCallback = () => {}
     , dataCallback = () => {}
     , reloadCallback = () => {}
 
@@ -72,6 +74,7 @@ module.exports = ({ debug = false } = { debug: false }) => {
     ) {
       state.isPlay = false
       socket.emit('state', state)
+      stateCallback(state)
     }
   })
 
@@ -82,6 +85,7 @@ module.exports = ({ debug = false } = { debug: false }) => {
     ) {
       state.isPlay = true
       socket.emit('state', state)
+      stateCallback(state)
     }
   })
 
@@ -107,6 +111,10 @@ module.exports = ({ debug = false } = { debug: false }) => {
         statusCallback = callback
       }
 
+      if (type === 'state') {
+        stateCallback = callback
+      }
+
       if (type === 'data') {
         dataCallback = callback
       }
@@ -115,7 +123,16 @@ module.exports = ({ debug = false } = { debug: false }) => {
         reloadCallback = callback
       }
     },
-    sendMessage: (platform, text) =>
+    sendMessage: async (platform, text, dalay = 700) => {
+      await sleep(delay)
       socket.emit('sendMessage', { platform, text })
+    },
+    sendMessages: (platform, texts, dalay = 700) => {
+      for (let i = 0; texts.length < i; i++) {
+        const text = texts[i]
+        await sleep(delay)
+        socket.emit('sendMessage', { platform, text })
+      }
+    }
   })
 }
