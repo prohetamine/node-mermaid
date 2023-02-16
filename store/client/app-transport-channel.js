@@ -4599,9 +4599,13 @@ window.MermaidAppTransportChannel = ({ port = 6969, debug = false } = { port: 69
     connectCallback()
   })
 
-  socket.on('disconnect', async () =>
-    window.close()
-  )
+  socket.on('disconnect', async () => {
+    if (window.navigator.userAgent.match(/OBS/)) {
+      // ok... wait reconnect
+    } else {
+      window.close()
+    }
+  })
 
   socket.on('readData', data => {
     debug && console.log('writeData', data)
