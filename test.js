@@ -40,16 +40,22 @@ const MermaidParser = require('./parser')
       console.log(parseData)
     })
   })
+
+  console.log('Available platforms ', Mermaid.availablePlatforms)
+
   console.log('Listen data event')
 
-  setTimeout(() => {
-    //Mermaid.sendMessage('Chaturbate', 'hello world')
-    //Mermaid.sendMessage('Stripchat', 'hello world')
-    //Mermaid.sendMessage('xHamsterLive', 'hello world')
-    //Mermaid.sendMessage('BongaCams', 'hello world')
-    // wait for next message delay min 500-700ms
+  setTimeout(async () => {
+    //await Mermaid.sendMessage('Chaturbate', 'hello world')
+    //await Mermaid.sendMessage('Stripchat', 'hello world')
+    //await Mermaid.sendMessage('xHamsterLive', 'hello world')
+    //await Mermaid.sendMessage('BongaCams', 'hello world', 5000 /* delay message ms */)
+
+    //await Mermaid.sendMessages('BongaCams', ['hello', 'world'])
+    //await Mermaid.sendMessages('Chaturbate', ['hello', 'world'], 5000 /* delay messages ms */)
 
     // todo:
-    // Mermaid.sendMessage('chaturbate', { Raw message PM })
+    //await Mermaid.sendMessage('Chaturbate', { Raw message PM })
+    //await Mermaid.sendMessages('Chaturbate', { Raw message PM })
   }, 5000)
 })()

@@ -3,6 +3,14 @@ const express     = require('express')
     , http        = require('http')
     , server      = http.createServer(app)
     , { Server }  = require('socket.io')
+    , sleep       = require('sleep-promise')
+
+const availablePlatforms = [
+  'Chaturbate',
+  'BongaCams',
+  'xHamsterLive',
+  'Stripchat'
+]
 
 module.exports = ({ port = 6767 } = { port: 6767, debug: false }) => {
   const io = new Server(server, {
@@ -67,11 +75,22 @@ module.exports = ({ port = 6767 } = { port: 6767, debug: false }) => {
         dataCallback = callback
       }
     },
-    sendMessage: (platform, text) => {
+    availablePlatforms,
+    sendMessage: async (platform, text, delay = 700) => {
+      await sleep(delay)
       io.to('extension').emit('input', {
         platform,
         text
       })
+    },
+    sendMessages: async (platform, texts, delay = 700) => {
+      for (let i = 0; i < texts.length; i++) {
+        await sleep(delay)
+        io.to('extension').emit('input', {
+          platform,
+          text: texts[i]
+        })
+      }
     }
   }
 }
