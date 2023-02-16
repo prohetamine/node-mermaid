@@ -26,10 +26,12 @@ module.exports = ({
   let openWindowCallback = () => {}
     , openWindowReadmeCallback = () => {}
     , appChannelSendMessageCallback = () => {}
+    , appChannelSendMessagesCallback = () => {}
 
   AppChannel(
     io,
-    (platform, text) => appChannelSendMessageCallback(platform, text)
+    (platform, text, delay) => appChannelSendMessageCallback(platform, text, delay),
+    (platform, texts, delay) => appChannelSendMessagesCallback(platform, texts, delay)
   )
   StoreChannel(io, url => openWindowReadmeCallback(url))
   AppTransportChannel(io, data => openWindowCallback(data))
@@ -76,6 +78,10 @@ module.exports = ({
       on: (type, callback) => {
         if (type === 'sendMessage') {
           appChannelSendMessageCallback = callback
+        }
+
+        if (type === 'sendMessages') {
+          appChannelSendMessagesCallback = callback
         }
       }
     },

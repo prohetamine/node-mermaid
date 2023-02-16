@@ -1,4 +1,4 @@
-module.exports = (io, appChannelSendMessageCallback) => {
+module.exports = (io, appChannelSendMessageCallback, appChannelSendMessagesCallback) => {
   io.on('connection', socket => {
     if (socket.handshake.query.platform === 'app-channel') {
       const clients = io.sockets.adapter.rooms.get('app-channel')
@@ -37,8 +37,12 @@ module.exports = (io, appChannelSendMessageCallback) => {
         })
       })
 
-      socket.on('sendMessage', ({ platform, text }) =>
-        appChannelSendMessageCallback(platform, text)
+      socket.on('sendMessage', ({ platform, text, delay }) =>
+        appChannelSendMessageCallback(platform, text, delay)
+      )
+
+      socket.on('sendMessages', ({ platform, texts, delay }) =>
+        appChannelSendMessageCallback(platform, texts, delay)
       )
     }
   })
