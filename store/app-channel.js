@@ -128,7 +128,7 @@ module.exports = ({ debug = false } = { debug: false }) => {
       socket.emit('sendMessage', { platform, text })
     },
     sendMessages: async (platform, texts, delay = 700) => {
-      for (let i = 0; texts.length < i; i++) {
+      for (let i = 0; texts.length > i; i++) {
         const text = texts[i]
         await sleep(delay)
         socket.emit('sendMessage', { platform, text })
