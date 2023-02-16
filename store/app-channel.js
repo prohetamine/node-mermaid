@@ -123,11 +123,11 @@ module.exports = ({ debug = false } = { debug: false }) => {
         reloadCallback = callback
       }
     },
-    sendMessage: async (platform, text, dalay = 700) => {
+    sendMessage: async (platform, text, delay = 700) => {
       await sleep(delay)
       socket.emit('sendMessage', { platform, text })
     },
-    sendMessages: async (platform, texts, dalay = 700) => {
+    sendMessages: async (platform, texts, delay = 700) => {
       for (let i = 0; texts.length < i; i++) {
         const text = texts[i]
         await sleep(delay)
