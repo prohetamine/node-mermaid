@@ -1,5 +1,6 @@
 const { io } = require('socket.io-client')
     , sleep = require('sleep-promise')
+    , availablePlatforms = require('./../available-platforms')
 
 module.exports = ({ debug = false } = { debug: false }) => {
   const [repository, app, port, size, isDev] = process.argv.slice(2)
@@ -123,6 +124,7 @@ module.exports = ({ debug = false } = { debug: false }) => {
         reloadCallback = callback
       }
     },
+    availablePlatforms,
     sendMessage: (platform, text, delay) =>
       socket.emit('sendMessage', { platform, text, delay })
     ,

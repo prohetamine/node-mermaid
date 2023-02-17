@@ -1,16 +1,10 @@
-const express     = require('express')
-    , app         = express()
-    , http        = require('http')
-    , server      = http.createServer(app)
-    , { Server }  = require('socket.io')
-    , sleep       = require('sleep-promise')
-
-const availablePlatforms = [
-  'Chaturbate',
-  'BongaCams',
-  'xHamsterLive',
-  'Stripchat'
-]
+const express             = require('express')
+    , app                 = express()
+    , http                = require('http')
+    , server              = http.createServer(app)
+    , { Server }          = require('socket.io')
+    , sleep               = require('sleep-promise')
+    , availablePlatforms  = require('./available-platforms')
 
 module.exports = ({ port = 6767 } = { port: 6767, debug: false }) => {
   const io = new Server(server, {
