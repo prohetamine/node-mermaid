@@ -42,7 +42,7 @@ module.exports = (io, appChannelSendMessageCallback, appChannelSendMessagesCallb
       )
 
       socket.on('sendMessages', ({ platform, texts, delay }) =>
-        appChannelSendMessageCallback(platform, texts, delay)
+        appChannelSendMessagesCallback(platform, texts, delay)
       )
     }
   })
