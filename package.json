@@ -1,12 +1,13 @@
 {
   "name": "node-mermaid",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "node test.js",
     "example-auto-hello": "node examples/auto-hello.js",
-    "example-time": "node examples/time.js"
+    "example-time": "node examples/time.js",
+    "example-plugins": "node examples/plugins"
   },
   "author": "Stas Prohetamine",
   "license": "ISC",

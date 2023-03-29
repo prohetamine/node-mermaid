@@ -15,8 +15,8 @@ const io = new Server(server, {
   }
 })
 
-let dataCallback: Function = () => {}
-  , statusCallback: Function = () => {}
+let dataCallbacks: Function[] = []
+  , statusCallbacks: Function[] = []
 
 const sites = {}
 
@@ -34,7 +34,7 @@ const proxySites: any = new Proxy(sites, {
             online: target[key] 
           })
         )
-        statusCallback(normalizeStatus)
+        statusCallbacks.forEach(statusCallback => statusCallback(normalizeStatus))
       }
 
       sendStatus()
@@ -59,7 +59,7 @@ io.on('connection', (socket: any) => {
   socket.on('output', (data: string) => {
     const parsedData: { platform: string } = JSON.parse(data)
     proxySites[parsedData.platform] = true
-    dataCallback(parsedData)
+    dataCallbacks.forEach(dataCallback => dataCallback(parsedData))
   })
 
   socket.on('disconnect', () => {
@@ -71,11 +71,11 @@ module.exports = {
   ready: () => new Promise(res => server.listen(6767, res)),
   on: (type: string, callback: Function) => {
     if (type === 'status') {
-      statusCallback = callback
+      statusCallbacks.push(callback)
     }
 
     if (type === 'data') {
-      dataCallback = callback
+      dataCallbacks.push(callback)
     }
   },
   availablePlatforms,

@@ -1,6 +1,6 @@
 import html from 'html-escaper'
 
-const StripChat = (extension: any, callback: Function, debug: boolean = false) => {
+const Stripchat = (extension: any, callback: Function, debug: boolean = false) => {
   let isParseData = false
     , isEasyData = false
 
@@ -123,4 +123,4 @@ const StripChat = (extension: any, callback: Function, debug: boolean = false) =
   }
 }
 
-export default StripChat
+export default Stripchat

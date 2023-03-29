@@ -15,7 +15,7 @@ const io = new Server(server, {
         methods: ['GET', 'POST']
     }
 });
-let dataCallback = () => { }, statusCallback = () => { };
+let dataCallbacks = [], statusCallbacks = [];
 const sites = {};
 let sitesTimeId = null;
 const proxySites = new Proxy(sites, {
@@ -27,7 +27,7 @@ const proxySites = new Proxy(sites, {
                     platform: key,
                     online: target[key]
                 }));
-                statusCallback(normalizeStatus);
+                statusCallbacks.forEach(statusCallback => statusCallback(normalizeStatus));
             };
             sendStatus();
             if (sitesTimeId !== null) {
@@ -45,7 +45,7 @@ io.on('connection', (socket) => {
     socket.on('output', (data) => {
         const parsedData = JSON.parse(data);
         proxySites[parsedData.platform] = true;
-        dataCallback(parsedData);
+        dataCallbacks.forEach(dataCallback => dataCallback(parsedData));
     });
     socket.on('disconnect', () => {
         proxySites[platform] = false;
@@ -55,10 +55,10 @@ module.exports = {
     ready: () => new Promise(res => server.listen(6767, res)),
     on: (type, callback) => {
         if (type === 'status') {
-            statusCallback = callback;
+            statusCallbacks.push(callback);
         }
         if (type === 'data') {
-            dataCallback = callback;
+            dataCallbacks.push(callback);
         }
     },
     availablePlatforms,

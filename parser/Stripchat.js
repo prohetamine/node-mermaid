@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const html_escaper_1 = __importDefault(require("html-escaper"));
-const StripChat = (extension, callback, debug = false) => {
+const Stripchat = (extension, callback, debug = false) => {
     let isParseData = false, isEasyData = false;
     const easyData = {
         events: {
@@ -115,4 +115,4 @@ const StripChat = (extension, callback, debug = false) => {
         }
     }
 };
-exports.default = StripChat;
+exports.default = Stripchat;
