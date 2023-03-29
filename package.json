@@ -1,10 +1,10 @@
 {
   "name": "node-mermaid",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node src/test.js",
+    "test": "node test.js",
     "example-auto-hello": "node examples/auto-hello.js",
     "example-time": "node examples/time.js"
   },

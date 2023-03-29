@@ -1,5 +1,5 @@
 console.log('Init script')
-const Mermaid = require('./index')()
+const Mermaid = require('./index')
 
 console.log('Init parser')
 const MermaidParser = require('./parser')

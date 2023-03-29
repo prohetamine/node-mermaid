@@ -1,4 +1,4 @@
-const Mermaid = require('../index')()
+const Mermaid = require('../index')
 const MermaidParser = require('../parser')
 
 const handleEvent = async data => {
