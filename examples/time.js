@@ -1,5 +1,5 @@
-const Mermaid = require('../src/index')()
-const MermaidParser = require('../src/parser')
+const Mermaid = require('../index')()
+const MermaidParser = require('../parser')
 
 const handleEvent = async data => {
   // console.log('data', data)
