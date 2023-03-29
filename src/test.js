@@ -1,8 +1,5 @@
 console.log('Init script')
-const Mermaid = require('./index')({
-  port: 6767,
-  debug: false
-})
+const Mermaid = require('./index')()
 
 console.log('Init parser')
 const MermaidParser = require('./parser')
@@ -20,7 +17,7 @@ const MermaidParser = require('./parser')
 
   console.log('Init data event')
   Mermaid.on('data', data => {
-    //console.log(data)
+    console.log(data)
 
     MermaidParser.Chaturbate(data, parseData => {
       if (parseData.isEasyData) {
@@ -41,7 +38,7 @@ const MermaidParser = require('./parser')
     })
   })
 
-  console.log('Available platforms ', Mermaid.availablePlatforms)
+  console.log('Available platforms ', MermaidParser.availablePlatforms)
 
   console.log('Listen data event')
 

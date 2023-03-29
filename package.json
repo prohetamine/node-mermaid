@@ -1,35 +1,27 @@
 {
   "name": "node-mermaid",
-  "version": "2.7.31",
+  "version": "3.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node test.js"
+    "test": "node src/test.js",
+    "example-auto-hello": "node examples/auto-hello.js",
+    "example-time": "node examples/time.js"
   },
   "author": "Stas Prohetamine",
   "license": "ISC",
   "dependencies": {
-    "app-data-folder": "^1.0.0",
-    "assert-file": "^1.0.0",
-    "axios": "^1.2.2",
-    "child_process": "^1.0.2",
-    "cors": "^2.8.5",
-    "curl": "^0.1.4",
+    "@types/html-escaper": "^3.0.0",
+    "cor": "^0.0.0",
     "express": "^4.18.2",
-    "fs": "^0.0.1-security",
-    "fs-extra": "^11.1.0",
-    "fse": "^4.0.1",
     "html-escaper": "^3.0.3",
     "http": "^0.0.1-security",
-    "npm": "^9.3.1",
-    "open": "^8.4.0",
-    "path": "^0.12.7",
     "sleep-promise": "^9.1.0",
-    "socket.io": "4.5.4",
-    "socket.io-client": "4.5.4",
-    "unzipper": "^0.10.11"
+    "socket.io": "4.5.2"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "@typescript-eslint/parser": "^5.57.0",
     "eslint": "^8.31.0"
   }
 }

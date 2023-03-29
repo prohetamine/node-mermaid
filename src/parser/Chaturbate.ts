@@ -1,6 +1,6 @@
-const { unescape } = require('html-escaper')
+import html from 'html-escaper'
 
-module.exports = (extension, callback, debug = false) => {
+const Chaturbate = (extension: any, callback: Function, debug: boolean = false) => {
   let isParseData = false
     , isEasyData = false
 
@@ -18,7 +18,7 @@ module.exports = (extension, callback, debug = false) => {
   }
 
   if (extension.platform === 'Chaturbate') {
-    extension.data.forEach(event => {
+    extension.data.forEach((event: any) => {
       const parseData = event
 
       try {
@@ -34,10 +34,10 @@ module.exports = (extension, callback, debug = false) => {
               easyData.username = parseData.data.from_username
             }
 
-            easyData.message = unescape(parseData.data.message)
+            easyData.message = html.unescape(parseData.data.message)
 
             isEasyData = true
-          } catch (e) {
+          } catch (error) {
             debug && console.log('!!!!!!!!! room:tip_alert !!!!!!!!!')
             debug && console.log(error)
             debug && console.log(parseData)
@@ -88,3 +88,5 @@ module.exports = (extension, callback, debug = false) => {
     })
   }
 }
+
+export default Chaturbate

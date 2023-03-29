@@ -1,12 +1,13 @@
 const express             = require('express')
     , app                 = express()
     , http                = require('http')
+    , cors                = require('cors')
     , server              = http.createServer(app)
     , { Server }          = require('socket.io')
     , sleep               = require('sleep-promise')
-    , availablePlatforms  = require('./available-platforms')
+    , availablePlatforms  = require('./parser/available-platforms')
 
-module.exports = ({ port = 6767 } = { port: 6767, debug: false }) => {
+module.exports = ({ debug = false }: { debug: boolean } = { debug: false }) => {
   const io = new Server(server, {
     cors: {
       origin: '*',
@@ -14,22 +15,26 @@ module.exports = ({ port = 6767 } = { port: 6767, debug: false }) => {
     }
   })
 
-  let dataCallback = () => {}
-    , statusCallback = () => {}
+  let dataCallback: Function = () => {}
+    , statusCallback: Function = () => {}
 
   const sites = {}
 
-  let sitesTimeId = null
+  let sitesTimeId: any = null
 
-  const proxySites = new Proxy(sites, {
-    set: (target, key, value) => {
+  const proxySites: any = new Proxy(sites, {
+    set: (target: any, key: string, value: string): any => {
       if (target[key] !== value) {
         target[key] = value
 
         const sendStatus = () => {
-          const normalizeStatus = Object.keys(target).map(key => ({ platform: key, online: target[key] }))
+          const normalizeStatus = Object.keys(target).map(
+            key => ({ 
+              platform: key, 
+              online: target[key] 
+            })
+          )
           statusCallback(normalizeStatus)
-          io.sockets.to('app-channel').emit('status', normalizeStatus)
         }
 
         sendStatus()
@@ -40,27 +45,32 @@ module.exports = ({ port = 6767 } = { port: 6767, debug: false }) => {
 
         sitesTimeId = setInterval(sendStatus, 5000)
       }
+
+      return true
     }
   })
 
-  io.on('connection', socket => {
-    proxySites[socket.handshake.query.platform] = true
+  io.on('connection', (socket: any) => {
+    debug && console.log(socket)
+    const platform = socket.handshake.query.platform
+
+    proxySites[platform] = true
     socket.join('extension')
 
-    socket.on('output', data => {
-      const parsedData = JSON.parse(data)
+    socket.on('output', (data: string) => {
+      const parsedData: { platform: string } = JSON.parse(data)
       proxySites[parsedData.platform] = true
       dataCallback(parsedData)
     })
 
     socket.on('disconnect', () => {
-      proxySites[socket.handshake.query.platform] = false
+      proxySites[platform] = false
     })
   })
 
   return {
-    ready: () => new Promise(res => server.listen(port, res)),
-    on: (type, callback) => {
+    ready: () => new Promise(res => server.listen(6767, res)),
+    on: (type: string, callback: Function) => {
       if (type === 'status') {
         statusCallback = callback
       }
@@ -70,14 +80,14 @@ module.exports = ({ port = 6767 } = { port: 6767, debug: false }) => {
       }
     },
     availablePlatforms,
-    sendMessage: async (platform, text, delay = 700) => {
+    sendMessage: async (platform: string, text: string, delay: number = 700) => {
       await sleep(delay)
       io.to('extension').emit('input', {
         platform,
         text
       })
     },
-    sendMessages: async (platform, texts, delay = 700) => {
+    sendMessages: async (platform: string, texts: string[], delay: number = 700) => {
       for (let i = 0; i < texts.length; i++) {
         await sleep(delay)
         io.to('extension').emit('input', {

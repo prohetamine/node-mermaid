@@ -1,6 +1,6 @@
-const { unescape } = require('html-escaper')
+import html from 'html-escaper'
 
-module.exports = (extension, callback, debug = false) => {
+const StripChat = (extension: any, callback: Function, debug: boolean = false) => {
   let isParseData = false
     , isEasyData = false
 
@@ -29,7 +29,7 @@ module.exports = (extension, callback, debug = false) => {
               easyData.tokenCount = parseData.params.message.details.amount
 
               if (parseData.params.message.details.body) {
-                easyData.message = unescape(parseData.params.message.details.body)
+                easyData.message = html.unescape(parseData.params.message.details.body)
               }
 
               if (parseData.params.message.details.isAnonymous) {
@@ -122,3 +122,5 @@ module.exports = (extension, callback, debug = false) => {
     }
   }
 }
+
+export default StripChat

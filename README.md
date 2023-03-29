@@ -1,1 +1,3 @@
 # node-mermaid
+
+see examples

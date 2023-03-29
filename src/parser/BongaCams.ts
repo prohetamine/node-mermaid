@@ -1,6 +1,6 @@
-const { unescape } = require('html-escaper')
+import html from 'html-escaper'
 
-module.exports = (extension, callback, debug = false) => {
+const BongaCams = (extension: any, callback: Function, debug: boolean = false) => {
   let isParseData = false
     , isEasyData = false
 
@@ -25,7 +25,7 @@ module.exports = (extension, callback, debug = false) => {
         try {
           easyData.events.isMessage = true
 
-          easyData.message = unescape(parseData.body.message)
+          easyData.message = html.unescape(parseData.body.message)
 
           if (parseData.body.author.username === extension.modelUsername) {
             easyData.isModel = true
@@ -92,3 +92,5 @@ module.exports = (extension, callback, debug = false) => {
     }
   }
 }
+
+export default BongaCams
