@@ -73,6 +73,10 @@ module.exports = ({ port, debug }) => {
         }
         sockets[key] = socket
 
+        if (!socketsEvents[key]) {
+          socketsEvents[key] = {}
+        }
+
         Object.keys(socketsEvents[key]).forEach(type => {
           socket.on(type, socketsEvents[key][type])
         })
