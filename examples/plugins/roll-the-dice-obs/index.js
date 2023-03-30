@@ -18,7 +18,7 @@ module.exports = ({ static, socket, sendMessage, availablePlatforms, debug }) =>
         (debug ? true : data.easyData.isUser) && 
         data.easyData.tokenCount === 150
       ) {
-        _socket.send('spin')
+        _socket.emit('spin')
       }
     }
 

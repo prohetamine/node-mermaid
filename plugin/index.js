@@ -102,7 +102,7 @@ module.exports = ({ port, debug }) => {
                           socketsEvents[key][type] = cb
                         }
                       },
-                      send: (type, data) => {
+                      emit: (type, data) => {
                         const socket = sockets[key]
 
                         if (socket) {

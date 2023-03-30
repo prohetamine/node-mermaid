@@ -28,7 +28,7 @@ module.exports = options => {
     if (data.isEasyData) {
       options.debug && console.log(data.easyData)
       
-      _socket.send('input', data.easyData)
+      _socket.emit('input', data.easyData)
     }
     */
 
